@@ -143,33 +143,37 @@ const login = async (req, res, next) => {
     }
   };
 
-const sendResetEmail = async (email, token) => {
+  const sendResetEmail = async (email, token) => {
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
         user: process.env.EMAIL,
         pass: process.env.EMAIL_PASSWORD,
       },
+      tls: {
+        rejectUnauthorized: false, // Ignore self-signed certificate errors (development only)
+      },
     });
-  const mailOptions = {
-    from: process.env.EMAIL,
-    to: email,
-    subject: 'Password Reset',
-    text: `You requested a password reset. Click the link to reset your password: ${process.env.CLIENT_URL}/reset-password/${token}`,
-  };
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: 'Password Reset',
+      text: `You requested a password reset. Click the link to reset your password: ${process.env.CLIENT_URL}/reset-password/${token}`,
+    };
 
-  await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 };
-
 const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
+   // console.log(user);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found." });
     }
 
     const token = user.generatePasswordResetToken();
+    //console.log(token);
     user.passwordResetToken = token;
     await user.save();
     await sendResetEmail(email, token);
