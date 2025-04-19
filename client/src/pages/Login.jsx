@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext'; 
 import Logo from '../assets/app_logo.png';
 import home from '../assets/home.png';
 import { showToast } from '../utils/toast';
@@ -9,26 +10,24 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { ToastContainer } from 'react-toastify';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; 
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated } = useAuth();
   const [values, setValues] = useState({ email: "", password: "" });
-  const [passwordVisible, setPasswordVisible] = useState(false); 
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data } = await axios.get(APIRoutes.authCheck, { withCredentials: true });
-        if (data.isAuthenticated) navigate("/dashboard");
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchData();
-  }, []);
+    // Redirect only if user is authenticated and currently on the login page
+    if (isAuthenticated && location.pathname === '/login') {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, location, navigate]);
 
   const handleValidation = () => {
-    const { password, email } = values;
+    const { email, password } = values;
     if (email === "") {
       showToast("Email is required.", "error");
       return false;
@@ -45,8 +44,8 @@ const Login = () => {
       try {
         const { email, password } = values;
         const { data } = await axios.post(APIRoutes.login, { email, password }, { withCredentials: true });
-
         if (data.success) {
+          login(data.user);
           showToast(data.message, "success");
           navigate("/dashboard");
         } else {
@@ -67,6 +66,7 @@ const Login = () => {
     try {
       const { data } = await axios.post(APIRoutes.googleLogin, { tokenId: response.credential }, { withCredentials: true });
       if (data.success) {
+        login(data.user);
         showToast(data.message, "success");
         navigate("/dashboard");
       } else {
@@ -87,12 +87,12 @@ const Login = () => {
         <Navbar />
 
         <div className="flex flex-1">
-          {/* Left Side - Image */}
+          {/* Left Side */}
           <div className="w-1/2 hidden md:flex items-center justify-center bg-gray-100">
             <img src={home} alt="Dashboard Preview" className="max-w-full h-auto" />
           </div>
 
-          {/* Right Side - Login Form */}
+          {/* Right Side */}
           <div className="w-full md:w-1/2 bg-gradient-to-br from-pink-100 to-orange-100 flex flex-col justify-center items-center p-8">
             <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
               <div className="flex items-center justify-center mb-6">
@@ -131,7 +131,6 @@ const Login = () => {
                 </button>
               </form>
 
-              {/* Forgot Password Link placed below */}
               <div className="text-center mt-4">
                 <Link to="/forgot-password" className="text-sm text-blue-500 font-semibold hover:underline">
                   Forgot Password?
