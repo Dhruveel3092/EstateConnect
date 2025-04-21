@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { ToastContainer } from 'react-toastify';
-import home from '../assets/home.png'; // importing the image
+import home from '../assets/home.png';
 
 const RegisterBroker = () => {
   const { register } = useAuth();
@@ -36,7 +36,15 @@ const RegisterBroker = () => {
     }
 
     try {
-      await register(values.name, values.email, values.password);
+      // Pass all broker-specific fields along with role to the register function
+      await register({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        companyName: values.companyName,
+        licenseNumber: values.licenseNumber,
+        role: "broker"
+      });
       navigate('/dashboard');
     } catch (error) {
       setErrorMessage(error.message);

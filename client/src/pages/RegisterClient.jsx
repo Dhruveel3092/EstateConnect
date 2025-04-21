@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { ToastContainer } from 'react-toastify';
-import home from '../assets/home.png'; // Your image
+import home from '../assets/home.png';
 
 const RegisterClient = () => {
   const { register } = useAuth();
@@ -34,7 +34,12 @@ const RegisterClient = () => {
     }
 
     try {
-      await register(values.name, values.email, values.password);
+      await register({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        role: "client"
+      });
       navigate('/dashboard');
     } catch (error) {
       setErrorMessage(error.message);
