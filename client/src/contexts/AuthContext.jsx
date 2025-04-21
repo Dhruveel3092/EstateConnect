@@ -36,9 +36,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
   };
 
-  const register = async (username, email, password) => {
+  const register = async (userData) => {
     try {
-      const { data } = await axios.post(APIRoutes.register, { username, email, password });
+      const { data } = await axios.post(APIRoutes.register, userData);
       if (data.success) {
         login(data.user);
       } else {
