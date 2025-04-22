@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaSearch, FaBell, FaUserCircle } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+import APIRoutes from '../utils/APIRoutes';
+import { showToast } from '../utils/toast';
 
 const DashboardHeader = () => {
-  const { user, logout } = useAuth();
+  const { user, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
@@ -33,9 +36,18 @@ const DashboardHeader = () => {
     setIsProfileOpen(false);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await axios.post(APIRoutes.logout, {}, { withCredentials: true });
+      // navigate('/login');
+      showToast('Logged out successfully.', 'success');
+      setIsAuthenticated(false);
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

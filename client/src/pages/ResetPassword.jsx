@@ -5,30 +5,17 @@ import { showToast } from '../utils/toast';
 import APIRoutes from '../utils/APIRoutes';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { useAuth } from '../contexts/AuthContext';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 
 const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-
+  const [newPasswordVisible, setNewPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [values, setValues] = useState({
     newPassword: '',
     confirmPassword: '',
   });
-  const [loading, setLoading] = useState(false);
-  
-
-  const [newPasswordVisible, setNewPasswordVisible] = useState(false);
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-
-  useEffect(() => {
-    
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
 
   const handleChange = (event) => {
     setValues({ ...values, [event.target.name]: event.target.value });
@@ -41,12 +28,10 @@ const ResetPassword = () => {
       showToast('Passwords do not match.', 'error');
       return;
     }
-    if (values.newPassword.length < 6) {
-      showToast('Password should be at least 6 characters.', 'error');
+    if (values.newPassword.length < 8) {
+      showToast('Password should be at least 8 characters.', 'error');
       return;
     }
-
-    setLoading(true);
     try {
       const { data } = await axios.post(APIRoutes.resetPassword, {
         token,
@@ -60,8 +45,6 @@ const ResetPassword = () => {
       }
     } catch (error) {
       showToast('Failed to reset password.', 'error');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -113,12 +96,11 @@ const ResetPassword = () => {
 
             <button
               type="submit"
-              disabled={loading}
-              className={`w-full py-3 rounded-lg font-semibold text-white ${
-                loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+              className={`w-full py-3 rounded-lg font-semibold text-white 
+                 bg-blue-500 hover:bg-blue-600
               } transition duration-300`}
             >
-              {loading ? 'Resetting...' : 'Reset Password'}
+              Reset Password
             </button>
           </form>
 

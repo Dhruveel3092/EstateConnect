@@ -29,6 +29,7 @@ const verifyToken = async (req, res, next) => {
             secure: true,
           });
           req.user = user;
+          console.log(user);
           req._id = user._id;
           req.username = user.username;
           req.email = user.email;

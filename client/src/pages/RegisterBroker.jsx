@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { ToastContainer } from 'react-toastify';
+import APIRoutes from '../utils/APIRoutes';
+import { showToast } from '../utils/toast';
 import home from '../assets/home.png';
+import { ToastContainer } from 'react-toastify';
+import axios from 'axios';
 
 const RegisterBroker = () => {
-  const { register } = useAuth();
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
-
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [values, setValues] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -20,36 +24,74 @@ const RegisterBroker = () => {
     licenseNumber: ""
   });
 
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const handleChange = (e) => {
-    setValues({ ...values, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (values.password !== values.confirmPassword) {
-      setErrorMessage("Passwords do not match.");
-      return;
-    }
-
-    try {
-      // Pass all broker-specific fields along with role to the register function
-      await register({
-        name: values.name,
-        email: values.email,
-        password: values.password,
-        companyName: values.companyName,
-        licenseNumber: values.licenseNumber,
-        role: "broker"
-      });
+  useEffect(() => {
+    if (isAuthenticated) {
       navigate('/dashboard');
-    } catch (error) {
-      setErrorMessage(error.message);
     }
+  }, [isAuthenticated, navigate]);
+
+
+  const handleValidation = () => {
+    const { password, confirmPassword, username, email, companyName, licenseNumber } = values;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!emailRegex.test(email)) {
+      showToast("Please enter a valid email address.", "error");
+      return false;
+    } else if (password !== confirmPassword) {
+      showToast("Password and confirm password should be same.", "error");
+      return false;
+    } else if (username.length < 3) {
+      showToast("Username should be greater than 3 characters.", "error");
+      return false;
+    } else if (password.length < 8) {
+      showToast("Password should be equal or greater than 8 characters.", "error");
+      return false;
+    } else if (email === "") {
+      showToast("Email is required.", "error");
+      return false;
+    } else if (companyName === "") {
+      showToast("Company Name is required.", "error");
+      return false;
+    } else if (licenseNumber === "") {
+      showToast("License Number is required.", "error");
+      return false;
+    }
+    
+    return true;
   };
+
+  const handleSubmit = async (event) => { 
+    event.preventDefault();
+    if(handleValidation())
+    {
+      try {
+        const { username, email, password, companyName, licenseNumber } = values;
+        const { data } = await axios.post(APIRoutes.brokerRegister,
+             { username, email, password, companyName, licenseNumber },
+             { withCredentials: true }
+            );
+
+        if(data.success)
+        {
+          showToast(data.message, "success");
+          setIsAuthenticated(true);
+          navigate("/dashboard");
+        }
+        else
+        {
+          showToast(data.message, "error");
+        }
+      } catch (error) { 
+        console.log(error);
+      }
+    }
+  }
+
+  const handleChange = (event) => { 
+    setValues({...values, [event.target.name]: event.target.value});
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -71,7 +113,7 @@ const RegisterBroker = () => {
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <input
                 type="text"
-                name="name"
+                name="username"
                 placeholder="Full Name"
                 onChange={handleChange}
                 className="w-full p-4 border rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -137,10 +179,6 @@ const RegisterBroker = () => {
                 Register as Broker
               </button>
             </form>
-
-            {errorMessage && (
-              <p className="text-red-500 text-center mt-4">{errorMessage}</p>
-            )}
           </div>
         </div>
       </div>

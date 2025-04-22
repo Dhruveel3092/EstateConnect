@@ -2,17 +2,16 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { showToast } from '../utils/toast';
 import APIRoutes from '../utils/APIRoutes';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
 const ForgotPassword = () => {
+  const [email, setEmail] = useState('');
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
    
@@ -31,22 +30,16 @@ const ForgotPassword = () => {
       showToast('Please enter your email address', 'error');
       return;
     }
-    setLoading(true);
-    setMessage(''); 
     try {
       const { data } = await axios.post(APIRoutes.forgotPassword, { email });
-      setLoading(false);
       if (data.success) {
         showToast(data.message, 'success');
-        setMessage('Password reset link sent successfully! Please check your inbox.');
+        navigate('/');
       } else {
         showToast(data.message, 'error');
-        setMessage('Failed to send reset link. Please try again.');
       }
     } catch (error) {
-      setLoading(false);
       showToast('Failed to send password reset email.', 'error');
-      setMessage('An error occurred while sending the reset link.');
     }
   };
 
@@ -66,24 +59,15 @@ const ForgotPassword = () => {
             />
             <button
               type="submit"
-              disabled={loading}
-              className={`w-full bg-blue-500 text-white p-4 rounded-lg font-semibold ${loading ? 'bg-gray-400 cursor-not-allowed' : 'hover:bg-blue-600'} transition duration-300`}
+              className={`w-full bg-blue-500 text-white p-4 rounded-lg font-semibold hover:bg-blue-600 transition duration-300`}
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              Send Reset Link
             </button>
           </form>
-          {message && (
-            <p className="text-center text-sm text-gray-600 mt-4">{message}</p>
-          )}
-          <p className="text-center text-sm text-gray-600">
-            Remembered your password?{' '}
-            <Link to="/login" className="text-blue-500 font-semibold hover:underline">
-              Login here
-            </Link>
-          </p>
         </div>
       </div>
       <Footer />
+      <ToastContainer/>
     </div>
   );
 };

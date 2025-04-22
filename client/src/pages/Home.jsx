@@ -1,7 +1,22 @@
+import React from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 const Home = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      toast.error("You are already logged in!");
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated]);
+
   return (
     <div className="flex flex-col min-h-screen font-sans">
       <Navbar />

@@ -10,51 +10,22 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser && storedUser !== "undefined") {
+    const fetchData = async () => {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error("Failed to parse user from localStorage:", error);
-        localStorage.removeItem('user');
-      }
-    }
-    setLoading(false);
-  }, []);
-
-  const login = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('user');
-  };
-
-  const register = async (userData) => {
-    try {
-      const { data } = await axios.post(APIRoutes.register, userData);
-      if (data.success) {
-        login(data.user);
-      } else {
-        throw new Error(data.message);
-      }
+        const { data } = await axios.get(APIRoutes.authCheck, { withCredentials: true });
+        // console.log(data);
+        setIsAuthenticated(data.isAuthenticated);
+        setUser(data.user);
     } catch (error) {
-      if (error.response && error.response.status === 409) {
-        throw new Error("Email already registered.");
-      } else {
-        throw new Error("Registration failed. Please try again.");
-      }
+      console.log(error)
     }
-  };
+    };
+    
+    fetchData();
+  }, [isAuthenticated]);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, loading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, setIsAuthenticated, loading, setLoading }}>
       {children}
     </AuthContext.Provider>
   );

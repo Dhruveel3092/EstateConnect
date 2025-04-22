@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
@@ -6,45 +6,83 @@ import Footer from '../components/Footer';
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { ToastContainer } from 'react-toastify';
 import home from '../assets/home.png';
+import { showToast } from '../utils/toast';
+import axios from 'axios';
+import APIRoutes from '../utils/APIRoutes';
 
 const RegisterClient = () => {
-  const { register } = useAuth();
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
-
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [values, setValues] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: ""
   });
 
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  useEffect(() => {
+      if (isAuthenticated) {
+        navigate('/dashboard');
+      }
+    }, [isAuthenticated, navigate]);
 
-  const handleChange = (e) => {
-    setValues({ ...values, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (values.password !== values.confirmPassword) {
-      setErrorMessage("Passwords do not match.");
-      return;
+    const handleValidation = () => {
+      const { password, confirmPassword, username, email } = values;
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (!emailRegex.test(email)) {
+        showToast("Please enter a valid email address.", "error");
+        return false;
+      } else if (password !== confirmPassword) {
+        showToast("Password and confirm password should be same.", "error");
+        return false;
+      } else if (username.length < 3) {
+        showToast("Username should be greater than 3 characters.", "error");
+        return false;
+      } else if (password.length < 8) {
+        showToast("Password should be equal or greater than 8 characters.", "error");
+        return false;
+      } else if (email === "") {
+        showToast("Email is required.", "error");
+        return false;
+      }
+      
+      return true;
+    };
+  
+    const handleSubmit = async (event) => { 
+      event.preventDefault();
+      if(handleValidation())
+      {
+        try {
+          const { username, email, password } = values;
+          const { data } = await axios.post(APIRoutes.clientRegister,
+               { username, email, password },
+               { withCredentials: true }
+              );
+  
+          if(data.success)
+          {
+            showToast(data.message, "success");
+            setIsAuthenticated(true);
+            navigate("/dashboard");
+          }
+          else
+          {
+            showToast(data.message, "error");
+          }
+        } catch (error) { 
+          console.log(error);
+        }
+      }
     }
-
-    try {
-      await register({
-        name: values.name,
-        email: values.email,
-        password: values.password,
-        role: "client"
-      });
-      navigate('/dashboard');
-    } catch (error) {
-      setErrorMessage(error.message);
+  
+    const handleChange = (event) => { 
+      setValues({...values, [event.target.name]: event.target.value});
     }
-  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -63,7 +101,7 @@ const RegisterClient = () => {
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <input
                 type="text"
-                name="name"
+                name="username"
                 placeholder="Full Name"
                 onChange={handleChange}
                 className="w-full p-4 border rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -115,10 +153,6 @@ const RegisterClient = () => {
                 Register
               </button>
             </form>
-
-            {errorMessage && (
-              <p className="text-red-500 text-center mt-4">{errorMessage}</p>
-            )}
           </div>
         </div>
       </div>

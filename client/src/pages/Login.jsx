@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext'; 
+import { useAuth } from '../contexts/AuthContext';
 import Logo from '../assets/app_logo.png';
 import home from '../assets/home.png';
 import { showToast } from '../utils/toast';
@@ -13,28 +13,36 @@ import Footer from '../components/Footer';
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
 const Login = () => {
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login, isAuthenticated } = useAuth();
-  const [values, setValues] = useState({ email: "", password: "" });
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+  });
 
   useEffect(() => {
-    // Redirect only if user is authenticated and currently on the login page
-    if (isAuthenticated && location.pathname === '/login') {
-      navigate("/dashboard");
+    if (isAuthenticated) {
+      navigate('/dashboard');
     }
-  }, [isAuthenticated, location, navigate]);
+  }, [isAuthenticated, navigate]);
 
   const handleValidation = () => {
-    const { email, password } = values;
-    if (email === "") {
+    const { password, email } = values;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      showToast("Please enter a valid email address.", "error");
+      return false;
+    } else if (password.length < 8) {
+      showToast("Password should be equal or greater than 8 characters.", "error");
+      return false;
+    } else if (email === "") {
       showToast("Email is required.", "error");
       return false;
-    } else if (password === "") {
-      showToast("Password is required.", "error");
-      return false;
     }
+
     return true;
   };
 
@@ -43,20 +51,25 @@ const Login = () => {
     if (handleValidation()) {
       try {
         const { email, password } = values;
-        const { data } = await axios.post(APIRoutes.login, { email, password }, { withCredentials: true });
+        const { data } = await axios.post(APIRoutes.login,
+          { email, password },
+          { withCredentials: true }
+        );
+
         if (data.success) {
-          login(data.user);
           showToast(data.message, "success");
+          setIsAuthenticated(true);
           navigate("/dashboard");
-        } else {
+        }
+        else {
           showToast(data.message, "error");
         }
       } catch (error) {
         console.log(error);
-        showToast(error.response?.data?.message || "Login failed", "error");
+        showToast(error.response.data.message, "error");
       }
     }
-  };
+  }
 
   const handleChange = (event) => {
     setValues({ ...values, [event.target.name]: event.target.value });
@@ -64,10 +77,13 @@ const Login = () => {
 
   const handleGoogleSuccess = async (response) => {
     try {
-      const { data } = await axios.post(APIRoutes.googleLogin, { tokenId: response.credential }, { withCredentials: true });
+      const { data } = await axios.post(APIRoutes.googleLogin, 
+        { tokenId: response.credential },
+        { withCredentials: true }
+      );
       if (data.success) {
-        login(data.user);
         showToast(data.message, "success");
+        setIsAuthenticated(true);
         navigate("/dashboard");
       } else {
         showToast(data.message, "error");

@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import home from '../assets/home.png'; // use same home image
+import { useAuth } from '../contexts/AuthContext'; // Assuming you have an AuthContext to manage authentication
+import { showToast } from '../utils/toast';
 
 const RegisterMain = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      showToast('You are already logged in', 'info');
+      navigate('/dashboard'); // Redirect to dashboard if already authenticated
+    }
+  }
+  , [isAuthenticated, navigate]);
 
   return (
     <div className="flex flex-col min-h-screen">

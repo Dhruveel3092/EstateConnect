@@ -30,6 +30,7 @@ app.use("/auth-check", verifyToken, (req, res) => {
 
 app.use('/auth', authRoutes);
 
+
 mongoose
   .connect( process.env.MONGO_URL, {
     useNewUrlParser: true,
