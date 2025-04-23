@@ -16,6 +16,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        
         <Route path="/register" element={<RegisterMain />} />
         <Route path="/register-broker" element={<RegisterBroker />} />
         <Route path="/register-client" element={<RegisterClient />} />

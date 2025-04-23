@@ -6,7 +6,7 @@ import axios from 'axios';
 import APIRoutes from '../utils/APIRoutes';
 import { showToast } from '../utils/toast';
 
-const DashboardHeader = () => {
+const clientDashboardHeader = () => {
   const { user, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -39,7 +39,6 @@ const DashboardHeader = () => {
   const handleLogout = async () => {
     try {
       await axios.post(APIRoutes.logout, {}, { withCredentials: true });
-      // navigate('/login');
       showToast('Logged out successfully.', 'success');
       setIsAuthenticated(false);
       setTimeout(() => {
@@ -52,21 +51,34 @@ const DashboardHeader = () => {
 
   return (
     <div className="bg-blue-700 text-white flex justify-between items-center p-4 shadow-lg sticky top-0 z-50">
-      
       {/* Left: Logo and Navigation */}
       <div className="flex items-center space-x-6">
         <Link to="/" className="text-2xl font-bold text-yellow-400">
           RealEstate
         </Link>
 
-        {/* Quick Links */}
-        <div className="hidden md:flex space-x-6">
-          <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
-          <Link to="/my-listings" className="hover:text-yellow-300">My Listings</Link>
-          <Link to="/my-auctions" className="hover:text-yellow-300">My Auctions</Link>
-          <Link to="/activity" className="hover:text-yellow-300">Activity</Link>
-          <Link to="/payments" className="hover:text-yellow-300">Payments</Link>
-        </div>
+        {/* Conditional Quick Links based on User Role */}
+        {user?.role === 'Client' ? (
+          <div className="hidden md:flex space-x-6">
+            <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
+            <Link to="/buy" className="hover:text-yellow-300">Buy</Link>
+            <Link to="/sell" className="hover:text-yellow-300">Sell</Link>
+            <Link to="/updates" className="hover:text-yellow-300">Updates</Link>
+            <Link to="/brokerage-firm" className="hover:text-yellow-300">Brokerage Firm</Link>
+          </div>
+        ) : user?.role === 'Broker' ? (
+          <div className="hidden md:flex space-x-6">
+            <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
+            <Link to="/my-listings" className="hover:text-yellow-300">My Listings</Link>
+            <Link to="/my-auctions" className="hover:text-yellow-300">My Auctions</Link>
+            <Link to="/activity" className="hover:text-yellow-300">Activity</Link>
+            <Link to="/payments" className="hover:text-yellow-300">Payments</Link>
+          </div>
+        ) : (
+          <div className="hidden md:flex space-x-6">
+            <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
+          </div>
+        )}
       </div>
 
       {/* Center: Search Bar */}
@@ -85,7 +97,6 @@ const DashboardHeader = () => {
 
       {/* Right: Notifications and Profile */}
       <div className="flex items-center space-x-6 relative">
-
         {/* Notifications Bell */}
         <div className="relative">
           <button onClick={toggleNotificationsDropdown} className="relative hover:text-yellow-300">
@@ -136,10 +147,9 @@ const DashboardHeader = () => {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );
 };
 
-export default DashboardHeader;
+export default clientDashboardHeader;
