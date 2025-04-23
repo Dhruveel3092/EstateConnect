@@ -119,7 +119,7 @@ const BrokerDashboardHeader = () => {
           {isProfileOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-lg z-20">
               <div className="p-4 space-y-2">
-                <Link to="/profile" className="block hover:text-blue-600">My Profile</Link>
+                <Link to={`/profile/${user?.username}`} className="block hover:text-blue-600">My Profile</Link>
                 <div onClick={handleLogout} className="block cursor-pointer text-red-600 hover:text-red-800">
                   Logout
                 </div>
