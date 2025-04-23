@@ -10,7 +10,7 @@ const APIRoutes = {
   forgotPassword: `${host}/auth/forgot-password`,
   resetPassword: `${host}/auth/reset-password`,
   logout: `${host}/auth/logout`,
-  brokerageFirm: `${host}/auth/brokerage-firm`,
+  brokerageFirm: `${host}/broker/brokerage-firm`,
 };
 
 export default APIRoutes;

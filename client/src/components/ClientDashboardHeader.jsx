@@ -6,7 +6,7 @@ import axios from 'axios';
 import APIRoutes from '../utils/APIRoutes';
 import { showToast } from '../utils/toast';
 
-const clientDashboardHeader = () => {
+const ClientDashboardHeader = () => {
   const { user, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -152,4 +152,4 @@ const clientDashboardHeader = () => {
   );
 };
 
-export default clientDashboardHeader;
+export default ClientDashboardHeader;

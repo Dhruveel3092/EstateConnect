@@ -9,11 +9,20 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [panel, setPanel] = useState(<div>Dashboard Panel</div>);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
     //console.log('User:', user);
+    if(!isAuthenticated) {
+      navigate('/login');
+    }
     if (user?.role) {
       //console.log('Rendering panel for role:', user.role);
       switch (user.role) {
