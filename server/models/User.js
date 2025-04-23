@@ -78,6 +78,22 @@ const BrokerSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  location: {
+    type: String,
+    default: "Not specified",
+  },
+  rating: {
+    type: Number,
+    default: 0,
+  },
+  commissionPercentage: {
+    type: Number,
+    default: 5,
+  },
+  contactNumber: {
+    type: String,
+    default: "Not specified",
+  },
 });
 
 
