@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import APIRoutes from '../utils/APIRoutes';
-import ClientDashboardHeader from '../components/ClientDashboardHeader';
 import Footer from '../components/Footer';
 import { showToast } from '../utils/toast';
 import { useAuth } from '../contexts/AuthContext';
+import ClientDashboardHeader from '../components/ClientDashboardHeader';
 
 const ClientDashboard = () => {
   const navigate = useNavigate();

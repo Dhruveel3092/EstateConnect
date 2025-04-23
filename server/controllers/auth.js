@@ -147,7 +147,7 @@ const login = async (req, res, next) => {
         let user = await User.findOne({ email });
         if (!user) {
           const hashedPassword = await bcrypt.hash(process.env.GOOGLE_AUTH_PASSWORD, 10);
-          user = await User.create({
+          user = await Client.create({
             username: name,
             email,
             password: hashedPassword, // Dummy password

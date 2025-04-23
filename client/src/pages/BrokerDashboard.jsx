@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import APIRoutes from '../utils/APIRoutes';
-import BrokerDashboardHeader from '../components/BrokerDashboard';
+import BrokerDashboardHeader from '../components/BrokerDashboardHeader';
 import Footer from '../components/Footer';
 import { showToast } from '../utils/toast';
 import { useAuth } from '../contexts/AuthContext';
+
 
 const BrokerDashboard = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const BrokerDashboard = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <BrokerDashboardHeader />
+       <BrokerDashboardHeader />
 
       <div className="bg-gradient-to-r from-blue-500 to-purple-500 py-8 px-4">
         <h1 className="text-4xl md:text-5xl font-extrabold text-white text-center">
