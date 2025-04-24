@@ -5,6 +5,7 @@ import BrokerProfile from './BrokerProfile';
 import ClientProfile from './ClientProfile';
 import { showToast } from '../utils/toast';
 import APIRoutes from '../utils/APIRoutes';
+import { use } from 'react';
 
 const Profile = () => {
   const { username } = useParams();
@@ -15,6 +16,7 @@ const Profile = () => {
   useEffect(() => {
     const checkAuthAndFetchProfile = async () => {
       try {
+        console.log(username);
         const authResponse = await axios.get(APIRoutes.authCheck, { withCredentials: true });
         if (!authResponse.data.user) {
           showToast('Please log in to view the profile', 'error');

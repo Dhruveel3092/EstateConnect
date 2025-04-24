@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const verifyToken = async (req, res, next) => {
+  // console.log(req);
   const accessToken = req.cookies.accessToken;
   const refreshToken = req.cookies.refreshToken;
   

@@ -10,9 +10,13 @@ const APIRoutes = {
   forgotPassword: `${host}/auth/forgot-password`,
   resetPassword: `${host}/auth/reset-password`,
   logout: `${host}/auth/logout`,
+
   brokerageFirm: `${host}/broker/brokerage-firm`,
   getBrokerProfile: `${host}/broker/getprofile`,
   updateBrokerProfile: `${host}/broker/updateprofile`,
+
+  getSignature: `${host}/general/getsignature`,
+  uploadProfileImage: `${host}/general/upload-profile-image`,
 };
 
 export default APIRoutes;

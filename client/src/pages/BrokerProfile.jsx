@@ -5,13 +5,22 @@ import { showToast } from '../utils/toast';
 import APIRoutes from '../utils/APIRoutes';
 import BrokerDashboardHeader from '../components/BrokerDashboardHeader';
 import Footer from '../components/Footer';
+import indianCities from '../utils/indianCities';
+import { ToastContainer } from 'react-toastify';
+import ProfileImageModal from './ProfileImageModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const BrokerProfile = () => {
   const navigate = useNavigate();
+  const { user, setUser } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [image, setImage] = useState(null);
+  const cities = indianCities;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -41,22 +50,36 @@ const BrokerProfile = () => {
       ...prev,
       [name]: value,
     }));
+    console.log(name, value);
+    if (name === 'location') {
+      if (value.trim() === '') {
+        setSuggestions([]);
+      } else {
+        const filtered = cities.filter((city) =>
+          city.toLowerCase().includes(value.toLowerCase())
+        );
+        setSuggestions(filtered);
+      }
+    }
+  };
+
+  const handleSuggestionClick = (city) => {
+    setFormData((prev) => ({
+      ...prev,
+      location: city,
+    }));
+    // console.log(formData);
+    setSuggestions([]);
   };
 
   const validateFormData = () => {
-    if (!formData.companyName || formData.companyName.trim() === '') {
-      showToast('Company Name is required.', 'error');
+    console.log(formData);
+    if (!formData.location || !cities.includes(formData.location.trim())) {
+      showToast('Location is required and must be selected from suggestions.', 'error');
       return false;
     }
-    if (!formData.licenseNumber || formData.licenseNumber.trim() === '') {
-      showToast('License Number is required.', 'error');
-      return false;
-    }
-    if (!formData.location || formData.location.trim() === '') {
-      showToast('Location is required.', 'error');
-      return false;
-    }
-    if (!formData.contactNumber || !/^\d{10}$/.test(formData.contactNumber)) {
+    console.log('Contact Number:', formData.contactNumber);
+    if (!(formData.contactNumber === null) && !(formData.contactNumber === '') && !/^\d{10}$/.test(formData.contactNumber)) {
       showToast('Contact Number must be a valid 10-digit number.', 'error');
       return false;
     }
@@ -89,6 +112,60 @@ const BrokerProfile = () => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const selectedImage = e.target.files[0];
+    setImage(selectedImage);
+  };
+
+  const uploadFile = async (type, timestamp, signature) => {
+    const data = new FormData();
+    data.append("file", image);
+    data.append("timestamp", timestamp);
+    data.append("signature", signature);
+    data.append("api_key", import.meta.env.VITE_CLOUDINARY_API_KEY);
+
+    try {
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const resourceType = type;
+      const api = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+
+      const res = await axios.post(api, data);
+      const { secure_url } = res.data;
+      return secure_url;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const getSignatureForUpload = async () => {
+    try {
+      const res = await axios.get(APIRoutes.getSignature, { withCredentials: true });
+      return res.data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const handleUpload = async () => {
+    try {
+      const { timestamp: imgTimestamp, signature: imgSignature } = await getSignatureForUpload();
+      const fileUrl = await uploadFile('image', imgTimestamp, imgSignature);
+      // console.log(imgUrl);
+      const response = await axios.post(APIRoutes.uploadProfileImage, { profilePicture: fileUrl }, { withCredentials: true });
+      if (response.data.success) {
+        showToast(response.data.message, "success");
+        setProfileData({ ...profileData, profilePicture: fileUrl });
+        setUser({ ...user, profilePicture: fileUrl });
+      } else {
+        showToast(response.data.message, "error");
+      }
+      setImage(null);
+    } catch (error) {
+      showToast(error.data.message, "error");
+      console.error('Error updating notice', error);
+    }
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
@@ -96,12 +173,23 @@ const BrokerProfile = () => {
   return (
     <>
       <BrokerDashboardHeader />
-
+      <ProfileImageModal
+        modalOpen={modalOpen}
+        setModalOpen={setModalOpen}
+        handleImageChange={handleImageChange}
+        handleUpload={handleUpload}
+        setImage={setImage}
+        image={image}
+      />
       <div className="bg-gray-100 min-h-screen py-12 px-6">
         <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg">
-          <h1 className="text-3xl font-bold text-center mb-8 text-blue-700">
-            Broker Profile
-          </h1>
+          <img
+            src={profileData.profilePicture}
+            alt="Profile"
+            className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-gray-300"
+            onClick={() => setModalOpen(true)}
+          />
+          <h2 className="text-2xl font-semibold text-center">{profileData.username}</h2>
 
           <form className="space-y-6">
             {/* Company Name */}
@@ -111,9 +199,8 @@ const BrokerProfile = () => {
                 type="text"
                 name="companyName"
                 value={formData.companyName || ''}
-                onChange={handleInputChange}
-                readOnly={!isEditing}
-                className={`w-full p-3 border rounded-md focus:outline-none ${isEditing ? 'border-blue-500' : 'bg-gray-100'}`}
+                readOnly={true}
+                className={`w-full p-3 border rounded-md focus:outline-none bg-gray-100`}
               />
             </div>
 
@@ -124,23 +211,37 @@ const BrokerProfile = () => {
                 type="text"
                 name="licenseNumber"
                 value={formData.licenseNumber || ''}
-                onChange={handleInputChange}
-                readOnly={!isEditing}
-                className={`w-full p-3 border rounded-md focus:outline-none ${isEditing ? 'border-blue-500' : 'bg-gray-100'}`}
+                readOnly={true}
+                className={`w-full p-3 border rounded-md focus:outline-none bg-gray-100`}
               />
             </div>
 
             {/* Location */}
-            <div>
+            <div className="relative">
               <label className="block text-gray-600 mb-1">Location</label>
               <input
                 type="text"
                 name="location"
-                value={formData.location || ''}
+                value={formData.location}
                 onChange={handleInputChange}
                 readOnly={!isEditing}
+                placeholder={formData.location ? formData.location : "Not specified"}
                 className={`w-full p-3 border rounded-md focus:outline-none ${isEditing ? 'border-blue-500' : 'bg-gray-100'}`}
+                autoComplete="off"
               />
+              {isEditing && suggestions.length > 0 && (
+                <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-48 overflow-y-auto">
+                  {suggestions.map((city, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSuggestionClick(city)}
+                      className="p-2 hover:bg-blue-100 cursor-pointer"
+                    >
+                      {city}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             {/* Contact Number */}
@@ -149,16 +250,17 @@ const BrokerProfile = () => {
               <input
                 type="text"
                 name="contactNumber"
-                value={formData.contactNumber || ''}
+                value={formData.contactNumber}
                 onChange={handleInputChange}
                 readOnly={!isEditing}
+                placeholder={formData.contactNumber ? formData.contactNumber : "Not specified"}
                 className={`w-full p-3 border rounded-md focus:outline-none ${isEditing ? 'border-blue-500' : 'bg-gray-100'}`}
               />
             </div>
 
             {/* Commission Percentage */}
             <div>
-              <label className="block text-gray-600 mb-1">Commission Percentage (%)</label>
+              <label className="block text-gray-600 mb-1">Brokerage (%)</label>
               <input
                 type="number"
                 name="commissionPercentage"
@@ -199,7 +301,7 @@ const BrokerProfile = () => {
                   onClick={() => setIsEditing(true)}
                   className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
                 >
-                  Edit Profile
+                  Edit Details
                 </button>
               )}
             </div>
@@ -219,6 +321,7 @@ const BrokerProfile = () => {
       </div>
 
       <Footer />
+      <ToastContainer />
     </>
   );
 };

@@ -62,6 +62,7 @@ const RegisterClient = () => {
       );
       if (data.success) {
         showToast(data.message, "success");
+        setIsAuthenticated(true);
         navigate("/dashboard");
       } else {
         showToast(data.message, "error");

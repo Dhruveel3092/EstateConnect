@@ -1,4 +1,5 @@
 import {User}  from '../models/User.js'; 
+
 const getBrokerProfile = async (req, res) => {
    // console.log(req.user);
   try {
@@ -56,5 +57,5 @@ const updateBrokerProfile = async (req, res) => {
 
 export {
     getBrokerProfile,
-    updateBrokerProfile
+    updateBrokerProfile,
 }

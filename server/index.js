@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 import verifyToken from "./middleware/authMiddleware.js";
 import brokerRoutes from "./routes/broker.js";
+import generalRoutes from "./routes/general.js";
 const app = express();
 
 import dotenv from "dotenv";
@@ -30,6 +31,7 @@ app.use("/auth-check", verifyToken, (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/broker',verifyToken,brokerRoutes);
+app.use('/general',verifyToken,generalRoutes);
 
 mongoose
   .connect( process.env.MONGO_URL, {
