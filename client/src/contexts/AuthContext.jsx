@@ -7,13 +7,12 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(APIRoutes.authCheck, { withCredentials: true });
-        // console.log(data);
         setIsAuthenticated(data.isAuthenticated);
         setUser(data.user);
     } catch (error) {
