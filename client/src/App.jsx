@@ -11,6 +11,7 @@ import RegisterBroker from "./pages/RegisterBroker";
 import RegisterClient from "./pages/RegisterClient";
 import BrokerageFirm from "./pages/BrokerageFirm";
 import Profile from "./pages/Profile";
+import BrokerProfileDetails from "./pages/BrokerProfileDetails";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/register-client" element={<RegisterClient />} />
         <Route path="/login" element={<Login />} />
         <Route path='/profile/:username' element={<Profile />} />
+        <Route path='/broker/profile/:username' element={<BrokerProfileDetails/>} />
         <Route path="/brokerage-firm" element={<BrokerageFirm />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />

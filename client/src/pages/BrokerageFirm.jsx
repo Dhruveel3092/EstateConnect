@@ -1,56 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ClientDashboardHeader from '../components/ClientDashboardHeader';
 import Footer from '../components/Footer';
-import  APIRoutes  from '../utils/APIRoutes'; // Assuming your APIRoutes
-
-const brokers = [
-  {
-    username: 'brokerJohn',
-    name: 'John Doe',
-    location: 'New York, NY',
-    rating: 4.5,
-    commissionPercentage: 6,
-  },
-  {
-    username: 'brokerJane',
-    name: 'Jane Smith',
-    location: 'Los Angeles, CA',
-    rating: 4.8,
-    commissionPercentage: 5,
-  },
-  {
-    username: 'brokerAlex',
-    name: 'Alex Johnson',
-    location: 'Chicago, IL',
-    rating: 4.2,
-    commissionPercentage: 7,
-  },
-];
+import APIRoutes from '../utils/APIRoutes';
+import { useAuth } from '../contexts/AuthContext';
+import { showToast } from '../utils/toast';
 
 const BrokerageFirm = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [brokers, setBrokers] = useState([]);
+  const [brokersLoading, setBrokersLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAuthStatus = async () => {
-      try {
-        const { data } = await axios.get(APIRoutes.authCheck, { withCredentials: true });
-        setIsAuthenticated(data.isAuthenticated);
+    if (!isAuthenticated) {
+      showToast('Please log in to access the brokerage firm', 'error');
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
-        if (!data.isAuthenticated) {
-          navigate('/login');
-        }
+  useEffect(() => {
+    const fetchBrokers = async () => {
+      try {
+        const { data } = await axios.get(APIRoutes.getAllBrokers, { withCredentials: true });
+        setBrokers(data.brokers || []);
       } catch (error) {
-        console.error(error);
-        navigate('/login'); // if API fails, safer to redirect
+        console.error('Failed to fetch brokers:', error);
+      } finally {
+        setBrokersLoading(false);
       }
     };
 
-    fetchAuthStatus();
-  }, [navigate]);
+    if (isAuthenticated) {
+      fetchBrokers();
+    }
+  }, [isAuthenticated]);
 
+  // Remove the loading indicator; render the UI regardless of brokersLoading
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <ClientDashboardHeader />
@@ -60,16 +47,20 @@ const BrokerageFirm = () => {
 
         <div className="flex flex-col items-center gap-10">
           {brokers.map((broker) => (
-            <Link
+            <div
               key={broker.username}
-              to={`/profile/${broker.username}`}
               className="w-full max-w-md bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-transform hover:scale-105 p-6 flex flex-col items-center"
             >
+              {/* Profile picture */}
               <div className="w-28 h-28 mb-6 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                <span className="text-4xl text-gray-400">👤</span>
+                <img
+                  src={broker.profilePicture || 'https://via.placeholder.com/150'}
+                  alt={`${broker.name}'s Profile`}
+                  className="w-full h-full object-cover"
+                />
               </div>
 
-              <h2 className="text-2xl font-semibold text-gray-800 mb-2">{broker.name}</h2>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-2">{broker.username}</h2>
               <p className="text-gray-500 mb-2">{broker.location}</p>
 
               <span className="bg-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-full mb-4">
@@ -80,11 +71,15 @@ const BrokerageFirm = () => {
                 <div className="text-sm text-gray-700">
                   <span className="font-medium">Commission:</span> {broker.commissionPercentage}%
                 </div>
-                <div className="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
+                <Link
+                  to={`/broker/profile/${broker.username}`}
+                  state={broker}  // Passing the broker data to the profile page
+                  className="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full"
+                >
                   View Profile
-                </div>
+                </Link>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </main>
