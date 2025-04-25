@@ -29,6 +29,14 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "https://res.cloudinary.com/drxcjij97/image/upload/v1707052827/zupx5ylgkrtq33lzzkma.png",
     },
+    location: {
+      type: String,
+      default: '',
+    },
+    contactNumber: {
+      type: String,
+      default: '',
+    },
     refreshToken: {
       type: String,
     },
@@ -48,6 +56,8 @@ UserSchema.methods.generateAccessToken = function () {
       username: this.username,
       role: this.role,
       profilePicture: this.profilePicture,
+      location: this.location,
+      contactNumber: this.contactNumber,
     },
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
@@ -83,10 +93,6 @@ const BrokerSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  location: {
-    type: String,
-    default: null,
-  },
   rating: {
     type: Number,
     default: 0,
@@ -94,10 +100,6 @@ const BrokerSchema = new mongoose.Schema({
   commissionPercentage: {
     type: Number,
     default: 5,
-  },
-  contactNumber: {
-    type: String,
-    default: null,
   },
 });
 

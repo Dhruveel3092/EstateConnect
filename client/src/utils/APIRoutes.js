@@ -15,6 +15,9 @@ const APIRoutes = {
   getBrokerProfile: `${host}/broker/getprofile`,
   updateBrokerProfile: `${host}/broker/updateprofile`,
 
+  getClientProfile: `${host}/client/getprofile`,
+  updateClientProfile: `${host}/client/updateprofile`,
+
   getSignature: `${host}/general/getsignature`,
   uploadProfileImage: `${host}/general/upload-profile-image`,
 };

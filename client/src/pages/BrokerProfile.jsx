@@ -74,7 +74,7 @@ const BrokerProfile = () => {
 
   const validateFormData = () => {
     console.log(formData);
-    if (!formData.location || !cities.includes(formData.location.trim())) {
+    if (!formData.location && !(formData.location==='') && !cities.includes(formData.location.trim())) {
       showToast('Location is required and must be selected from suggestions.', 'error');
       return false;
     }
@@ -193,6 +193,7 @@ const BrokerProfile = () => {
 
           <form className="space-y-6">
             {/* Company Name */}
+
             <div>
               <label className="block text-gray-600 mb-1">Company Name</label>
               <input
@@ -204,6 +205,16 @@ const BrokerProfile = () => {
               />
             </div>
 
+            <div>
+              <label className="block text-gray-600 mb-1">Email</label>
+              <input
+                type="text"
+                name="companyName"
+                value={formData.email || ''}
+                readOnly={true}
+                className={`w-full p-3 border rounded-md focus:outline-none bg-gray-100`}
+              />
+            </div>
             {/* License Number */}
             <div>
               <label className="block text-gray-600 mb-1">License Number</label>

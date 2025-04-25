@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 import verifyToken from "./middleware/authMiddleware.js";
 import brokerRoutes from "./routes/broker.js";
+import clientRoutes from "./routes/client.js";
 import generalRoutes from "./routes/general.js";
 const app = express();
 
@@ -30,8 +31,9 @@ app.use("/auth-check", verifyToken, (req, res) => {
 });
 
 app.use('/auth', authRoutes);
-app.use('/broker',verifyToken,brokerRoutes);
 app.use('/general',verifyToken,generalRoutes);
+app.use('/broker',verifyToken,brokerRoutes);
+app.use('/client',verifyToken,clientRoutes);
 
 mongoose
   .connect( process.env.MONGO_URL, {
