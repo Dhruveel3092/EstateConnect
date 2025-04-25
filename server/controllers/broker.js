@@ -6,7 +6,7 @@ const getBrokerProfile = async (req, res) => {
    
     const userId = req.user._id; 
 
-    const user = await User.findById(userId).select('-password'); 
+    const user = await User.findById(userId).select('-password -refreshToken -passwordResetToken -__v'); 
     //console.log(user);
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
@@ -55,7 +55,29 @@ const updateBrokerProfile = async (req, res) => {
   }
 };
 
+
+const getAllBrokerProfile = async (req, res) => {
+  try {
+    const brokers = await User.find({
+      role: 'Broker',
+      companyName: { $ne: null },
+      licenseNumber: { $ne: null },
+      location: { $exists: true, $ne: null, $ne: '' },
+      contactNumber: { $exists: true, $ne: null, $ne: '' },
+      rating: { $ne: null },
+      commissionPercentage: { $ne: null },
+    }).select('-password -refreshToken -passwordResetToken -__v');
+
+    res.status(200).json({ brokers });
+  } catch (error) {
+    console.error('Error fetching brokers:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 export {
     getBrokerProfile,
     updateBrokerProfile,
+    getAllBrokerProfile,
 }

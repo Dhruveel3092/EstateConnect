@@ -20,6 +20,9 @@ const APIRoutes = {
 
   getSignature: `${host}/general/getsignature`,
   uploadProfileImage: `${host}/general/upload-profile-image`,
+
+  getAllBrokers: `${host}/broker/get-all-brokers`,
+
 };
 
 export default APIRoutes;
