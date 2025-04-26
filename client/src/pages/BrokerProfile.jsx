@@ -12,45 +12,51 @@ import { useAuth } from '../contexts/AuthContext';
 
 const BrokerProfile = () => {
   const navigate = useNavigate();
-  const { user, setUser } = useAuth();
+  const { user, isAuthenticated, loading, setUser } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [formData, setFormData] = useState({});
-  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [image, setImage] = useState(null);
   const cities = indianCities;
 
+  // Fetch broker profile
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data } = await axios.get(APIRoutes.getBrokerProfile, { withCredentials: true });
-        if (data.role !== 'Broker') {
-          showToast('Unauthorized Access', 'error');
-          navigate('/dashboard');
-          return;
-        }
-        setProfileData(data);
-        setFormData(data);
-      } catch (error) {
-        console.error('Profile fetch error:', error);
+    if (!loading) {
+      if (!isAuthenticated) {
+        showToast('Please log in to access your profile', 'error');
         navigate('/login');
-      } finally {
-        setLoading(false);
+      } else {
+        const fetchProfile = async () => {
+          try {
+            const { data } = await axios.get(APIRoutes.getBrokerProfile, { withCredentials: true });
+            if (data.role !== 'Broker') {
+              showToast('Unauthorized Access', 'error');
+              navigate('/dashboard');
+              return;
+            }
+            setProfileData(data);
+            setFormData(data);
+          } catch (error) {
+            console.error('Profile fetch error:', error);
+            navigate('/login');
+          }
+        };
+
+        fetchProfile();
       }
-    };
+    }
+  }, [isAuthenticated, loading, navigate]);
 
-    fetchProfile();
-  }, [navigate]);
-
+  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    console.log(name, value);
+
     if (name === 'location') {
       if (value.trim() === '') {
         setSuggestions([]);
@@ -63,23 +69,22 @@ const BrokerProfile = () => {
     }
   };
 
+  // Handle suggestion click
   const handleSuggestionClick = (city) => {
     setFormData((prev) => ({
       ...prev,
       location: city,
     }));
-    // console.log(formData);
     setSuggestions([]);
   };
 
+  // Validate form data
   const validateFormData = () => {
-    console.log(formData);
-    if (!formData.location && !(formData.location==='') && !cities.includes(formData.location.trim())) {
+    if (!formData.location || !cities.includes(formData.location.trim())) {
       showToast('Location is required and must be selected from suggestions.', 'error');
       return false;
     }
-    console.log('Contact Number:', formData.contactNumber);
-    if (!(formData.contactNumber === null) && !(formData.contactNumber === '') && !/^\d{10}$/.test(formData.contactNumber)) {
+    if (formData.contactNumber && !/^\d{10}$/.test(formData.contactNumber)) {
       showToast('Contact Number must be a valid 10-digit number.', 'error');
       return false;
     }
@@ -96,10 +101,9 @@ const BrokerProfile = () => {
     return true;
   };
 
+  // Save profile changes
   const handleSave = async () => {
-    if (!validateFormData()) {
-      return;
-    }
+    if (!validateFormData()) return;
 
     try {
       const { data } = await axios.put(APIRoutes.updateBrokerProfile, formData, { withCredentials: true });
@@ -112,6 +116,7 @@ const BrokerProfile = () => {
     }
   };
 
+  // Handle image upload
   const handleImageChange = (e) => {
     const selectedImage = e.target.files[0];
     setImage(selectedImage);
@@ -119,10 +124,10 @@ const BrokerProfile = () => {
 
   const uploadFile = async (type, timestamp, signature) => {
     const data = new FormData();
-    data.append("file", image);
-    data.append("timestamp", timestamp);
-    data.append("signature", signature);
-    data.append("api_key", import.meta.env.VITE_CLOUDINARY_API_KEY);
+    data.append('file', image);
+    data.append('timestamp', timestamp);
+    data.append('signature', signature);
+    data.append('api_key', import.meta.env.VITE_CLOUDINARY_API_KEY);
 
     try {
       const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -133,18 +138,18 @@ const BrokerProfile = () => {
       const { secure_url } = res.data;
       return secure_url;
     } catch (error) {
-      console.log(error);
+      console.error('File upload error:', error);
     }
-  }
+  };
 
   const getSignatureForUpload = async () => {
     try {
       const res = await axios.get(APIRoutes.getSignature, { withCredentials: true });
       return res.data;
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching signature:', error);
     }
-  }
+  };
 
   const handleUpload = async () => {
     try {
@@ -153,20 +158,20 @@ const BrokerProfile = () => {
       // console.log(imgUrl);
       const response = await axios.post(APIRoutes.uploadProfileImage, { profilePicture: fileUrl }, { withCredentials: true });
       if (response.data.success) {
-        showToast(response.data.message, "success");
+        showToast(response.data.message, 'success');
         setProfileData({ ...profileData, profilePicture: fileUrl });
         setUser({ ...user, profilePicture: fileUrl });
       } else {
-        showToast(response.data.message, "error");
+        showToast(response.data.message, 'error');
       }
       setImage(null);
     } catch (error) {
-      showToast(error.data.message, "error");
-      console.error('Error updating notice', error);
+      showToast('Failed to upload image.', 'error');
+      console.error('Image upload error:', error);
     }
   };
 
-  if (loading) {
+  if (loading || !profileData) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
@@ -184,16 +189,15 @@ const BrokerProfile = () => {
       <div className="bg-gray-100 min-h-screen py-12 px-6">
         <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg">
           <img
-            src={profileData.profilePicture}
+            src={profileData.profilePicture || 'https://via.placeholder.com/150'}
             alt="Profile"
-            className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-gray-300"
+            className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-gray-300 cursor-pointer"
             onClick={() => setModalOpen(true)}
           />
           <h2 className="text-2xl font-semibold text-center">{profileData.username}</h2>
 
           <form className="space-y-6">
             {/* Company Name */}
-
             <div>
               <label className="block text-gray-600 mb-1">Company Name</label>
               <input
@@ -233,7 +237,7 @@ const BrokerProfile = () => {
               <input
                 type="text"
                 name="location"
-                value={formData.location}
+                value={formData.location || ''}
                 onChange={handleInputChange}
                 readOnly={!isEditing}
                 placeholder={formData.location ? formData.location : "Not specified"}
@@ -330,7 +334,6 @@ const BrokerProfile = () => {
           </form>
         </div>
       </div>
-
       <Footer />
       <ToastContainer />
     </>

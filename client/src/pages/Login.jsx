@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from '../assets/app_logo.png';
 import home from '../assets/home.png';
@@ -13,7 +13,7 @@ import Footer from '../components/Footer';
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
 const Login = () => {
-  const { isAuthenticated, setIsAuthenticated } = useAuth();
+  const { isAuthenticated, setIsAuthenticated, setUser, loading } = useAuth();
   const navigate = useNavigate();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [values, setValues] = useState({
@@ -29,7 +29,6 @@ const Login = () => {
 
   const handleValidation = () => {
     const { password, email } = values;
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
@@ -59,14 +58,14 @@ const Login = () => {
         if (data.success) {
           showToast(data.message, "success");
           setIsAuthenticated(true);
+          setUser(data.user);
           navigate("/dashboard");
-        }
-        else {
+        } else {
           showToast(data.message, "error");
         }
       } catch (error) {
         console.log(error);
-        showToast(error.response.data.message, "error");
+        showToast(error.response?.data?.message || "Login failed", "error");
       }
     }
   }
@@ -77,13 +76,14 @@ const Login = () => {
 
   const handleGoogleSuccess = async (response) => {
     try {
-      const { data } = await axios.post(APIRoutes.googleLogin, 
+      const { data } = await axios.post(APIRoutes.googleLogin,
         { tokenId: response.credential },
         { withCredentials: true }
       );
       if (data.success) {
         showToast(data.message, "success");
         setIsAuthenticated(true);
+        setUser(data.user);
         navigate("/dashboard");
       } else {
         showToast(data.message, "error");
@@ -96,6 +96,15 @@ const Login = () => {
   const handleGoogleFailure = () => {
     showToast("Google login failed.", "error");
   };
+
+  // Show loading while checking auth status
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        <h1 className="text-2xl font-semibold text-gray-700">Loading...</h1>
+      </div>
+    );
+  }
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>

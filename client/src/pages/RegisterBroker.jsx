@@ -11,7 +11,7 @@ import { ToastContainer } from 'react-toastify';
 import axios from 'axios';
 
 const RegisterBroker = () => {
-  const { isAuthenticated, setIsAuthenticated } = useAuth();
+  const { isAuthenticated, setIsAuthenticated ,setUser} = useAuth();
   const navigate = useNavigate();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -77,6 +77,7 @@ const RegisterBroker = () => {
         {
           showToast(data.message, "success");
           setIsAuthenticated(true);
+          setUser(data.user);
           navigate("/dashboard");
         }
         else

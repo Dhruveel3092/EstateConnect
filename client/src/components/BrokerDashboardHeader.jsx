@@ -7,7 +7,7 @@ import APIRoutes from '../utils/APIRoutes';
 import { showToast } from '../utils/toast';
 
 const BrokerDashboardHeader = () => {
-  const { user, setIsAuthenticated } = useAuth();
+  const { user, setIsAuthenticated,setUser } = useAuth();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
@@ -42,9 +42,8 @@ const BrokerDashboardHeader = () => {
       await axios.post(APIRoutes.logout, {}, { withCredentials: true });
       showToast('Logged out successfully.', 'success');
       setIsAuthenticated(false);
-      setTimeout(() => {
-        navigate('/login');
-      }, 1500);
+      setUser(null);
+      navigate('/login');
     } catch (error) {
       console.log(error);
     }
