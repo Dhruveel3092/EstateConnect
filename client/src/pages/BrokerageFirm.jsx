@@ -9,16 +9,22 @@ import { showToast } from '../utils/toast';
 
 const BrokerageFirm = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth(); // Access user from AuthContext
   const [brokers, setBrokers] = useState([]);
   const [brokersLoading, setBrokersLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Check if user is authenticated
+    if (!loading && !isAuthenticated) {
       showToast('Please log in to access the brokerage firm', 'error');
       navigate('/login');
     }
-  }, [isAuthenticated, navigate]);
+
+    // Check if the user is a Broker, and redirect to dashboard
+    if (user?.role === 'Broker') {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, loading, navigate, user]);  // Added `user` dependency
 
   useEffect(() => {
     const fetchBrokers = async () => {
@@ -37,7 +43,8 @@ const BrokerageFirm = () => {
     }
   }, [isAuthenticated]);
 
-  // Remove the loading indicator; render the UI regardless of brokersLoading
+  if (loading) return null;  // Don’t render anything until auth check is done
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <ClientDashboardHeader />
@@ -51,7 +58,6 @@ const BrokerageFirm = () => {
               key={broker.username}
               className="w-full max-w-md bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-transform hover:scale-105 p-6 flex flex-col items-center"
             >
-              {/* Profile picture */}
               <div className="w-28 h-28 mb-6 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                 <img
                   src={broker.profilePicture || 'https://via.placeholder.com/150'}
@@ -73,7 +79,7 @@ const BrokerageFirm = () => {
                 </div>
                 <Link
                   to={`/broker/profile/${broker.username}`}
-                  state={broker}  // Passing the broker data to the profile page
+                  state={broker}
                   className="bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full"
                 >
                   View Profile

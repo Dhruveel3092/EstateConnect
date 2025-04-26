@@ -58,7 +58,7 @@ const generateAccessAndRefreshTokens = async(_id) =>{
         }
       );
 
-    return res.status(201).json({success:true, message:"User created successfully."});
+    return res.status(201).json({success:true, message:"User created successfully.",user:user});
   };
 
   const brokerRegister = async (req, res, next) => {
@@ -96,7 +96,7 @@ const generateAccessAndRefreshTokens = async(_id) =>{
         }
       );
 
-    return res.status(201).json({success:true, message:"User created successfully."});
+    return res.status(201).json({success:true, message:"User created successfully.",user:user});
   };
 
 const login = async (req, res, next) => {
@@ -128,7 +128,7 @@ const login = async (req, res, next) => {
       secure: true,
     });
 
-    return res.status(200).json({success: true, message: "Login successful." });
+    return res.status(200).json({success: true, message: "Login successful.",user:user });
   } catch (error) {
     next(error);
   }
@@ -172,7 +172,7 @@ const login = async (req, res, next) => {
               secure: true,
             }
           );
-        return res.status(201).json({success:true, message:"Google login successful."});
+        return res.status(201).json({success:true, message:"Google login successful.",user:user });
       } else {
         return res.status(400).json({ success: false, message: "Google login failed." });
       }

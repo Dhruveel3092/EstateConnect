@@ -8,16 +8,28 @@ import { showToast } from '../utils/toast';
 const Profile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
-  const { user, isAuthenticated} = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      showToast('Please log in to view the profile', 'error');
-      navigate('/login');
+    if (!loading) {
+      if (!isAuthenticated) {
+        showToast('Please log in to view the profile', 'error');
+        navigate('/login');
+      } else if (user?.username !== username) {
+        // Redirect to dashboard if the username in params doesn't match the authenticated user
+        showToast('Unauthorized Access', 'error');
+        navigate('/dashboard');
+      }
     }
-  }, [ isAuthenticated, navigate]);
+  }, [isAuthenticated, loading, navigate, user, username]);
 
-
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="text-gray-500 text-lg">Loading...</span>
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !user) {
     return (

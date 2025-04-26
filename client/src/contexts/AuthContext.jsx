@@ -7,24 +7,39 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // start with loading = true
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUser = async () => {
+      setLoading(true); // begin loading
+
       try {
         const { data } = await axios.get(APIRoutes.authCheck, { withCredentials: true });
         setIsAuthenticated(data.isAuthenticated);
         setUser(data.user);
-    } catch (error) {
-      console.log(error)
-    }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setIsAuthenticated(false);
+        setUser(null);
+      } finally {
+        setLoading(false); // finish loading
+      }
     };
-    
-    fetchData();
-  }, [isAuthenticated]);
+
+    fetchUser();
+  }, []); // only run once on mount
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, setIsAuthenticated, loading, setLoading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        setIsAuthenticated,
+        setUser,
+        loading,
+        setLoading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

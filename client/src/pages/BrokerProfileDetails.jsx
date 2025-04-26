@@ -6,22 +6,20 @@ import ClientDashboardHeader from '../components/ClientDashboardHeader';
 const BrokerProfileDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user,loading } = useAuth();
   const [brokerData, setBrokerData] = useState(null);
 
   useEffect(() => {    
-    if (!isAuthenticated) {
+    if (!loading && !isAuthenticated) {
       navigate('/login');
     } else {
       if (!location.state) {
-        // If broker data not provided in location.state, redirect accordingly
         if (user && user.role === 'Broker') {
           navigate('/dashboard');
         } else {
           navigate('/login');
         }
       } else {
-        // Destructure broker data and store it in state
         const {
           username,
           profilePicture,
@@ -46,12 +44,10 @@ const BrokerProfileDetails = () => {
         });
       }
     }
-  }, [isAuthenticated, location.state, navigate, user]);
+  }, [isAuthenticated, location.state, navigate, user,loading]);
 
-  // If brokerData is not set, render nothing (no loading indicator)
   if (!brokerData) return null;
 
-  // Destructure brokerData for rendering
   const {
     username,
     profilePicture,
@@ -149,13 +145,7 @@ const BrokerProfileDetails = () => {
             className="bg-gray-600 text-white px-6 py-2 rounded-full text-lg hover:bg-gray-700 transition"
           >
             Back to Brokers
-          </button>
-          <button
-            onClick={() => navigate(`/broker/edit/${username}`)}
-            className="bg-yellow-500 text-white px-6 py-2 rounded-full text-lg hover:bg-yellow-600 transition"
-          >
-            Edit Profile
-          </button>
+          </button> 
         </div>
       </main>
 

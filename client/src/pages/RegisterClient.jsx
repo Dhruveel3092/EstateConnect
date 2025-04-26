@@ -12,7 +12,7 @@ import APIRoutes from '../utils/APIRoutes';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 const RegisterClient = () => {
-  const { isAuthenticated, setIsAuthenticated, user } = useAuth();
+  const { isAuthenticated, setIsAuthenticated, user,setUser } = useAuth();
   const navigate = useNavigate();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -89,7 +89,8 @@ const RegisterClient = () => {
         if (data.success) {
           showToast(data.message, "success");
           setIsAuthenticated(true);
-          console.log(user);
+          setUser(data.user);
+       //   console.log(user);
           navigate("/dashboard");
         }
         else {
