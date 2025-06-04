@@ -21,7 +21,9 @@ const APIRoutes = {
   getSignature: `${host}/general/getsignature`,
   uploadProfileImage: `${host}/general/upload-profile-image`,
   createListing: `${host}/general/create-listing`,
-  
+  getAllListings: `${host}/general/get-all-listings`,
+  getSingleListing: `${host}/general/get-single-listing`,
+
   getAllBrokers: `${host}/broker/get-all-brokers`,
 
 };

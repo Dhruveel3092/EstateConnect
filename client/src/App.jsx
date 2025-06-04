@@ -13,6 +13,8 @@ import BrokerageFirm from "./pages/BrokerageFirm";
 import Profile from "./pages/Profile";
 import BrokerProfileDetails from "./pages/BrokerProfileDetails";
 import CreateListing from "./pages/sell";
+import Buy from "./pages/Buy";
+import ListingDetails from "./pages/ListingDetails";
 
 export default function App() {
   return (
@@ -30,6 +32,8 @@ export default function App() {
         <Route path='/broker/profile/:username' element={<BrokerProfileDetails/>} />
         <Route path="/brokerage-firm" element={<BrokerageFirm />} />
         <Route path="/sell" element={<CreateListing />} />
+        <Route path="/buy" element={<Buy/>}/>
+        <Route path="/listing/:id" element={<ListingDetails />} />
       </Routes>
       <ToastContainer />
     </div>
