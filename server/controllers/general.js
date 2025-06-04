@@ -131,7 +131,7 @@ const getSingleListing = async (req, res) => {
     const listing = await Listing.findById(req.params.id)
       .populate({
         path: 'brokerIds',
-        select: 'username email contactNumber profilePicture role', // include relevant broker fields
+        select: 'username email contactNumber  role', // include relevant broker fields
       });
 
     if (!listing) {
