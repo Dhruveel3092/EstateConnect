@@ -1,24 +1,22 @@
 import { User } from '../models/User.js';
-import {v2 as cloudinary} from 'cloudinary';
+import Listing from '../models/Listing.js';
+import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
   api_key: process.env.CLOUDINARY_API_KEY, 
   api_secret: process.env.CLOUDINARY_API_SECRETE,
-  secure : true,
+  secure: true,
 });
 
 const getSignature = async (req, res, next) => {
   try {
-    // console.log(req.user);
-    const timestamp = Math.round((new Date).getTime() / 1000);
-    const signature = cloudinary.utils.api_sign_request({
-      timestamp,
-    },process.env.CLOUDINARY_API_SECRETE);
-    // console.log("Timestamp:", timestamp);
-    return res.json({timestamp,signature});
+    const timestamp = Math.round((new Date()).getTime() / 1000);
+    const signature = cloudinary.utils.api_sign_request({ timestamp }, process.env.CLOUDINARY_API_SECRETE);
+    return res.json({ timestamp, signature });
   } catch (error) {
     console.error(error);
     next(error);
@@ -26,7 +24,7 @@ const getSignature = async (req, res, next) => {
 };
 
 const uploadProfileImage = async (req, res, next) => {
-  try{
+  try {
     const { profilePicture } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -36,21 +34,83 @@ const uploadProfileImage = async (req, res, next) => {
     await user.save();
 
     const accessToken = user.generateAccessToken();
-    
     res.cookie("accessToken", accessToken, {
-        expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
-        httpOnly: true,
-        sameSite: 'none',
-        secure: true,
+      expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
     });
 
     return res.status(200).json({ success: true, message: "Profile image uploaded successfully" });
-  }catch(error){
+  } catch (error) {
     return res.status(500).json({ message: "Server error", error });
   }
-}
+};
+
+const createListing = async (req, res, next) => {
+  try {
+    const {
+      imageUrls,
+      brokerIds,
+      name,
+      description,
+      address,
+      location,
+      type,
+      bedrooms,
+      bathrooms,
+      startPrice,
+      visitDate,
+      startTime,
+      endTime,
+      parking,
+      furnished,
+    } = req.body;
+    
+    // Validate required fields
+    if (!name || !description || !address || !startPrice) {
+      return res.status(400).json({ success: false, message: 'Missing required fields.' });
+    }
+    
+    if (!imageUrls || imageUrls.length < 1) {
+      return res.status(400).json({ success: false, message: 'At least one image is required.' });
+    }
+    
+    // Create new listing document
+    const listing = new Listing({
+      imageUrls,
+      brokerIds,
+      name,
+      description,
+      address,
+      location,
+      type,
+      bedrooms,
+      bathrooms,
+      startPrice,
+      visitDate,
+      startTime,
+      endTime,
+      parking,
+      furnished,
+      userRef : req.user._id,
+    });
+
+    const savedListing = await listing.save();
+
+    return res.status(201).json({
+      success: true,
+      _id: savedListing._id,
+      message: 'Listing created successfully.',
+    });
+  } catch (error) {
+    console.error('Error creating listing:', error);
+    return res.status(500).json({ success: false, message: 'Server error while creating listing.' });
+  }
+};
 
 export {
-    getSignature,
-    uploadProfileImage,
-}
+  getSignature,
+  uploadProfileImage,
+  createListing,
+};
