@@ -60,13 +60,13 @@ const createListing = async (req, res, next) => {
       bedrooms,
       bathrooms,
       startPrice,
-      visitDate,
+      visitingDate,
       startTime,
       endTime,
       parking,
       furnished,
     } = req.body;
-    
+    //console.log('Creating listing with data:', req.body);
     // Validate required fields
     if (!name || !description || !address || !startPrice) {
       return res.status(400).json({ success: false, message: 'Missing required fields.' });
@@ -75,6 +75,8 @@ const createListing = async (req, res, next) => {
     if (!imageUrls || imageUrls.length < 1) {
       return res.status(400).json({ success: false, message: 'At least one image is required.' });
     }
+    //console.log(visitDate);
+     const visitDate = visitingDate ? new Date(visitingDate) : null; // Convert to Date object if provided
     
     // Create new listing document
     const listing = new Listing({
@@ -97,6 +99,7 @@ const createListing = async (req, res, next) => {
     });
 
     const savedListing = await listing.save();
+   // console.log('Listing created:', savedListing);
 
     return res.status(201).json({
       success: true,
@@ -121,18 +124,28 @@ const createListing = async (req, res, next) => {
   }
 };
 
- const getSingleListing = async (req, res) => {
+
+
+const getSingleListing = async (req, res) => {
   try {
-    console.log('Fetching listing with ID:', req.params.id);
-    const listing = await Listing.findById(req.params.id);
-    console.log('Fetched listing:', listing);
-    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+    const listing = await Listing.findById(req.params.id)
+      .populate({
+        path: 'brokerIds',
+        select: 'username email contactNumber profilePicture role', // include relevant broker fields
+      });
+
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found' });
+    }
 
     res.status(200).json({ listing });
   } catch (err) {
+    console.error('Error fetching listing:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+export default getSingleListing;
 
 export {
   getSignature,
