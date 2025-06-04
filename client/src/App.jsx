@@ -12,6 +12,7 @@ import RegisterClient from "./pages/RegisterClient";
 import BrokerageFirm from "./pages/BrokerageFirm";
 import Profile from "./pages/Profile";
 import BrokerProfileDetails from "./pages/BrokerProfileDetails";
+import CreateListing from "./pages/sell";
 
 export default function App() {
   return (
@@ -23,11 +24,12 @@ export default function App() {
         <Route path="/register-broker" element={<RegisterBroker />} />
         <Route path="/register-client" element={<RegisterClient />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path='/profile/:username' element={<Profile />} />
         <Route path='/broker/profile/:username' element={<BrokerProfileDetails/>} />
         <Route path="/brokerage-firm" element={<BrokerageFirm />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/sell" element={<CreateListing />} />
       </Routes>
       <ToastContainer />
     </div>

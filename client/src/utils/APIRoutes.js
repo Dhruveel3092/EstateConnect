@@ -20,7 +20,8 @@ const APIRoutes = {
 
   getSignature: `${host}/general/getsignature`,
   uploadProfileImage: `${host}/general/upload-profile-image`,
-
+  createListing: `${host}/general/create-listing`,
+  
   getAllBrokers: `${host}/broker/get-all-brokers`,
 
 };
