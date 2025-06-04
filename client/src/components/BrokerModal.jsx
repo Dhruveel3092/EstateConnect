@@ -5,7 +5,7 @@ const BrokerModal = ({
   brokerList,
   brokerSearch,
   setBrokerSearch,
-  selectedBrokers,
+  selectedBroker,
   handleBrokerSelect,
   onClose,
   isOpen,
@@ -27,7 +27,7 @@ const BrokerModal = ({
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-4">
               <Dialog.Title className="text-lg font-semibold text-gray-800">
-                Select Brokers
+                Select Broker
               </Dialog.Title>
               <button
                 onClick={onClose}
@@ -53,7 +53,7 @@ const BrokerModal = ({
                   key={broker._id}
                   onClick={() => handleBrokerSelect(broker)}
                   className={`p-2 cursor-pointer transition rounded ${
-                    selectedBrokers.find((b) => b._id === broker._id)
+                    selectedBroker && selectedBroker._id === broker._id
                       ? 'bg-blue-100 text-blue-800 font-medium'
                       : 'hover:bg-gray-100 text-gray-700'
                   }`}

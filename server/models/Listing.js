@@ -5,10 +5,10 @@ const ListingSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
-  brokerIds: {
-    type: [mongoose.Schema.Types.ObjectId],
+  brokerId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: [],
+    required: [true, 'Broker ID is required.'],
   },
   name: {
     type: String,

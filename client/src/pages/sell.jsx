@@ -18,7 +18,7 @@ const CreateListing = () => {
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     imageUrls: [],
-    brokerIds: [],
+    brokerId: [],
     name: '',
     description: '',
     address: '',
@@ -40,14 +40,12 @@ const CreateListing = () => {
   const [loading, setLoading] = useState(false);
 
   const [brokerSelectorVisible, setBrokerSelectorVisible] = useState(false);
-  const [selectedBrokers, setSelectedBrokers] = useState([]);
+  const [selectedBroker, setSelectedBroker] = useState(null);
   const [brokerSearch, setBrokerSearch] = useState('');
   const [brokerList, setBrokerList] = useState([]);
 
   useEffect(() => {
-    // if (brokerSelectorVisible && brokerList.length === 0) {
-      fetchBrokers();
-    // }
+    fetchBrokers();
   }, [brokerSelectorVisible]);
 
   const fetchBrokers = async () => {
@@ -61,11 +59,10 @@ const CreateListing = () => {
   };
 
   const handleBrokerSelect = (broker) => {
-    const alreadySelected = selectedBrokers.find(b => b._id === broker._id);
-    if (alreadySelected) {
-      setSelectedBrokers(prev => prev.filter(b => b._id !== broker._id));
+    if (selectedBroker && selectedBroker._id === broker._id) {
+      setSelectedBroker(null);
     } else {
-      setSelectedBrokers(prev => [...prev, broker]);
+      setSelectedBroker(broker);
     }
   };
 
@@ -181,8 +178,8 @@ const CreateListing = () => {
       return;
     }
 
-    if (selectedBrokers.length < 1) {
-      setError('You must select at least one broker.');
+    if (!selectedBroker) {
+      setError('You must select a broker.');
       return;
     }
     
@@ -207,8 +204,8 @@ const CreateListing = () => {
       return;
     }
     
-    const brokerIds = selectedBrokers.map((broker) => broker._id);
-    const payload = { ...formData, brokerIds };
+    const brokerId = selectedBroker._id;
+    const payload = { ...formData, brokerId };
 
     setLoading(true);
     try {
@@ -475,20 +472,18 @@ const CreateListing = () => {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-700">Broker Selection</h2>
             <div className="flex flex-col gap-4">
-              {selectedBrokers.length > 0 && (
+              {selectedBroker && (
                 <div className="flex flex-wrap gap-2">
-                  {selectedBrokers.map((broker) => (
-                    <span key={broker._id} className="px-3 py-1 bg-green-200 text-green-800 rounded-full flex items-center">
-                      {broker.username}
-                      <button 
-                        type="button" 
-                        onClick={() => handleBrokerSelect(broker)}
-                        className="ml-2 text-red-500"
-                      >
-                        &times;
-                      </button>
-                    </span>
-                  ))}
+                  <span key={selectedBroker._id} className="px-3 py-1 bg-green-200 text-green-800 rounded-full flex items-center">
+                    {selectedBroker.username}
+                    <button 
+                      type="button" 
+                      onClick={() => setSelectedBroker(null)}
+                      className="ml-2 text-red-500"
+                    >
+                      &times;
+                    </button>
+                  </span>
                 </div>
               )}
               <button 
@@ -503,17 +498,16 @@ const CreateListing = () => {
                   brokerList={brokerList}
                   brokerSearch={brokerSearch}
                   setBrokerSearch={setBrokerSearch}
-                  selectedBrokers={selectedBrokers}
+                  selectedBroker={selectedBroker}
                   handleBrokerSelect={handleBrokerSelect}
                   onClose={() => {
                     setBrokerSelectorVisible(false);
-                    setSelectedBrokers([]);
+                    setSelectedBroker(null);
                   }}
                   isOpen={brokerSelectorVisible}
                   onConfirm={() => {
                     setBrokerSelectorVisible(false);
-                  }
-                }
+                  }}
                 />
               )}
             </div>

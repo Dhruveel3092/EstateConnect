@@ -51,7 +51,7 @@ const createListing = async (req, res, next) => {
   try {
     const {
       imageUrls,
-      brokerIds,
+      brokerId,
       name,
       description,
       address,
@@ -79,7 +79,7 @@ const createListing = async (req, res, next) => {
     // Create new listing document
     const listing = new Listing({
       imageUrls,
-      brokerIds,
+      brokerId,
       name,
       description,
       address,
