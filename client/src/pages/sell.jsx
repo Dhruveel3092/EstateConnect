@@ -18,7 +18,7 @@ const CreateListing = () => {
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     imageUrls: [],
-    brokerId: [],
+    brokerId: null,
     name: '',
     description: '',
     address: '',
@@ -30,6 +30,8 @@ const CreateListing = () => {
     visitingDate: '',
     startTime: '',
     endTime: '',
+    biddingDate: '',
+    biddingStartTime: '',
     parking: false,
     furnished: false,
   });
@@ -195,6 +197,21 @@ const CreateListing = () => {
       const today = new Date().toISOString().split('T')[0];
       if (formData.visitingDate < today) {
         setError('Visiting date must be today or later.');
+        return;
+      }
+    }
+
+    if (formData.biddingDate.trim() !== '') {
+      if (!formData.biddingStartTime) {
+        setError('Bidding start time is required if Bidding Date is provided.');
+        return;
+      }
+      if (formData.biddingDate < formData.visitingDate) {
+        setError('Bidding date must be the same or after the visiting date.');
+        return;
+      }
+      if (formData.biddingStartTime < formData.startTime) {
+        setError('Bidding start time must be after the visiting start time.');
         return;
       }
     }
@@ -426,6 +443,37 @@ const CreateListing = () => {
                   className="p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   onChange={handleChange}
                   value={formData.endTime || ''}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-gray-700">Bidding Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col">
+                <label htmlFor="visitingDate" className="text-gray-700 font-medium mb-2">
+                  Bidding Date
+                </label>
+                <input
+                  type="date"
+                  id="biddingDate"
+                  required
+                  className="p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  onChange={handleChange}
+                  value={formData.biddingDate || ''}
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="startTime" className="text-gray-700 font-medium mb-2">
+                  Bidding Start Time
+                </label>
+                <input
+                  type="time"
+                  id="biddingStartTime"
+                  required
+                  className="p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  onChange={handleChange}
+                  value={formData.biddingStartTime || ''}
                 />
               </div>
             </div>

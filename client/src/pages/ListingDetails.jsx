@@ -19,6 +19,8 @@ const ListingDetails = () => {
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeLeft, setTimeLeft] = useState('');
+  const [isBiddingLive, setIsBiddingLive] = useState(false);
   const { isAuthenticated, loading: authLoading, user } = useAuth();
 
   useEffect(() => {
@@ -39,6 +41,7 @@ const ListingDetails = () => {
           withCredentials: true,
         });
         setListing(data.listing);
+        console.log(data.listing);
       } catch (error) {
         showToast('Failed to load property details.', 'error');
       } finally {
@@ -48,9 +51,39 @@ const ListingDetails = () => {
     fetchListing();
   }, [id]);
 
-  const handleBuy = () => {
-    showToast('Proceeding to purchase flow...', 'success');
-  };
+  useEffect(() => {
+    if (!listing?.biddingDate || !listing?.biddingStartTime) return;
+
+    // build the exact DateTime when bidding starts
+    const startAt = new Date(
+      `${new Date(listing.biddingDate).toISOString().split('T')[0]}T${listing.biddingStartTime}`
+    );
+
+    const timer = setInterval(() => {
+      const now = new Date();
+      const diff = startAt - now;
+
+      if (diff <= 0) {
+        setIsBiddingLive(true);
+        setTimeLeft('');
+        clearInterval(timer);
+      } else {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hrs  = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        // build a string, only prefixing days if >0
+        let parts = [];
+        if (days > 0) parts.push(`${days}d`);
+        parts.push(`${hrs}h`, `${mins}m`, `${secs}s`);
+
+        setTimeLeft(parts.join(' '));
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [listing]);
 
   const formatTime = (timeStr) => {
     if (!timeStr) return '';
@@ -121,34 +154,32 @@ const ListingDetails = () => {
             </p>
 
             <div className="text-3xl font-bold text-blue-600">
-              ₹{listing.startPrice.toLocaleString()}
+             Start Price ₹{listing.startPrice.toLocaleString()}
             </div>
 
             {/* Broker Details */}
-            {listing.brokerIds?.length > 0 && (
+            {listing.brokerId && (
               <div className="mt-4 space-y-4">
                 <h2 className="text-lg font-semibold text-gray-700">Brokers Assigned</h2>
-                {listing.brokerIds.map((broker) => (
                   <div
-                    key={broker._id}
+                    key={listing.brokerId._id}
                     className="p-4 bg-gray-50 border rounded-lg shadow-sm space-y-1"
                   >
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-blue-600" />
-                      <span>{broker.username}</span>
+                      <span>{listing.brokerId.username}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-green-600" />
-                      <span>{broker.email}</span>
+                      <span>{listing.brokerId.email}</span>
                     </div>
-                    {broker.contactNumber && (
+                    {listing.brokerId.contactNumber && (
                       <div className="flex items-center gap-2">
                         <Phone className="w-4 h-4 text-purple-600" />
-                        <span>{broker.contactNumber}</span>
+                        <span>{listing.brokerId.contactNumber}</span>
                       </div>
                     )}
                   </div>
-                ))}
               </div>
             )}
 
@@ -200,17 +231,45 @@ const ListingDetails = () => {
               </div>
             )}
 
+            {/* Bidding Info */}
+            {listing.biddingDate && (
+              <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-md space-y-1">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="w-5 h-5 text-yellow-600" />
+                  <span className="text-sm">
+                    Bidding Date: {new Date(listing.biddingDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-yellow-600" />
+                  <span className="text-sm">
+                    Bidding Time: {formatTime(listing.biddingStartTime)}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div>
               <h2 className="text-xl font-semibold text-gray-800 mt-6 mb-2">Description</h2>
               <p className="text-gray-600 leading-relaxed">{listing.description}</p>
             </div>
 
-            <button
-              onClick={handleBuy}
-              className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl text-lg font-semibold shadow-lg transition duration-300"
-            >
-              Buy Now
-            </button>
+            {listing.biddingDate && listing.biddingStartTime && (
+          <button
+            onClick={() => isBiddingLive && navigate(`/listing/${id}/bidding`)}
+            disabled={!isBiddingLive}
+            className={`w-full mt-6 px-6 py-3 rounded-xl text-lg font-semibold shadow-lg transition duration-300
+              ${
+                isBiddingLive
+                  ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white'
+                  : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+              }`}
+          >
+            {isBiddingLive 
+              ? (user && listing && user._id !== listing.userRef ? 'Join Bidding' : 'Watch Bidding')
+              : `Starts in ${timeLeft}`}
+          </button>
+        )}
           </div>
         </div>
         <ToastContainer />

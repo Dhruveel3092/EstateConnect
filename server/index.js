@@ -1,4 +1,6 @@
 import express from "express";
+import http from "http";
+import { Server } from "socket.io";
 import cors from "cors";
 import mongoose from "mongoose";
 import allowedOrigin from './config/allowedOrigin.js';
@@ -9,6 +11,30 @@ import brokerRoutes from "./routes/broker.js";
 import clientRoutes from "./routes/client.js";
 import generalRoutes from "./routes/general.js";
 const app = express();
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigin,
+    credentials: true,
+  }
+});
+
+// Socket.IO connection
+io.on("connection", (socket) => {
+  console.log("A user connected");
+
+  socket.on("joinListing", (listingId) => {
+    socket.join(listingId);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected");
+  });
+});
+
+// Make io accessible to routes
+app.set("io", io);
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -47,6 +73,6 @@ mongoose
     console.log(err.message);
   });
 
-const server = app.listen(8080, () =>
+server.listen(8080, () =>
   console.log(`Server started on 8080`)
 ); 

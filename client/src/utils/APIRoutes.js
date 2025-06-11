@@ -23,6 +23,8 @@ const APIRoutes = {
   createListing: `${host}/general/create-listing`,
   getAllListings: `${host}/general/get-all-listings`,
   getSingleListing: `${host}/general/get-single-listing`,
+  createBid: `${host}/general/create-bid`,
+  getBids: `${host}/general/get-bids`,
 
   getAllBrokers: `${host}/broker/get-all-brokers`,
 

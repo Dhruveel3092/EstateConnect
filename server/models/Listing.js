@@ -52,6 +52,19 @@ const ListingSchema = new mongoose.Schema({
   endTime: {
     type: String,
   },
+  biddingDate: {
+    type: Date,
+  },
+  biddingStartTime: {
+    type: String,
+  },
+  biddingEndTime: {
+    type: String,
+  },
+  currentHighestBid: {
+    type: Number,
+    default: 0
+  },
   parking: {
     type: Boolean,
     default: false,
