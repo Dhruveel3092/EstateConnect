@@ -108,7 +108,7 @@ const createListing = async (req, res, next) => {
       // Combine with the biddingStartTime to create a new Date object
       const startDateTime = new Date(`${dateString}T${biddingStartTime}`);
       // Add 5 minutes (5 * 60 * 1000 ms)
-      return new Date(startDateTime.getTime() + 5 * 60 * 10000);
+      return new Date(startDateTime.getTime() + 5 * 60 * 1000);
     };
 
     // For example, when initializing a listing or a bid:
@@ -129,17 +129,31 @@ const createListing = async (req, res, next) => {
 };
 
 
- const getAllListings = async (req, res) => {
+const getAllListings = async (req, res) => {
   try {
-    const listings = await Listing.find().sort({ createdAt: -1 }); // Most recent first
-    //console.log('Fetched listings:', listings.length);
-    res.status(200).json({ success: true, listings });
+    const now = new Date();
+
+    
+    const listings = await Listing.find().sort({ createdAt: -1 });
+
+    
+    const filteredListings = listings.filter(listing => {
+      if (!listing.biddingEndTime) return true; 
+
+      const endTime = new Date(listing.biddingEndTime);
+
+      
+      if (isNaN(endTime)) return false;
+
+      return endTime > now;
+    });
+
+    res.status(200).json({ success: true, listings: filteredListings });
   } catch (error) {
     console.error('Error fetching listings:', error.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
-
 
 
 const getSingleListing = async (req, res) => {
@@ -200,7 +214,7 @@ const createBid = async (req, res) => {
     await newBid.populate('bidder', 'username'); // populate username for front-end
 
     now = new Date();
-    const fiveMinutes = 5 * 60 * 10000;
+    const fiveMinutes = 5 * 60 * 1000;
     listing.biddingEndTime = new Date(now.getTime() + fiveMinutes);
     await listing.save();
 

@@ -62,7 +62,7 @@ const ClientDashboardHeader = () => {
             <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
             <Link to="/buy" className="hover:text-yellow-300">Buy</Link>
             <Link to="/sell" className="hover:text-yellow-300">Sell</Link>
-            <Link to="/updates" className="hover:text-yellow-300">Updates</Link>
+            <Link to="/my-deals" className="hover:text-yellow-300">My deals</Link>
             <Link to="/brokerage-firm" className="hover:text-yellow-300">Brokerage Firm</Link>
           </div>
         ) : user?.role === 'Broker' ? (

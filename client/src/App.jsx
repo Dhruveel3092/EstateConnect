@@ -16,6 +16,9 @@ import CreateListing from "./pages/sell";
 import Buy from "./pages/Buy";
 import ListingDetails from "./pages/ListingDetails";
 import Bidding from "./pages/Bidding";
+import BrokerListings from "./pages/BrokerListing";
+import BrokerListingDetails from "./pages/BrokerListingDetails";
+import MyDeals from "./pages/MyDeals";
 
 export default function App() {
   return (
@@ -36,6 +39,10 @@ export default function App() {
         <Route path="/buy" element={<Buy/>}/>
         <Route path="/listing/:id" element={<ListingDetails />} />
         <Route path="/listing/:id/bidding" element={<Bidding />} />
+        <Route path="/broker-listing" element={<BrokerListings/>} />
+        <Route path="/broker/listing/:id" element={<BrokerListingDetails />} />
+        <Route path="/my-deals" element={<MyDeals />} />
+        {/* Add more routes as needed */}
       </Routes>
       <ToastContainer />
     </div>
