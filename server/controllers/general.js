@@ -214,7 +214,7 @@ const createBid = async (req, res) => {
     await newBid.populate('bidder', 'username'); // populate username for front-end
 
     now = new Date();
-    const fiveMinutes = 5 * 60 * 10000;
+    const fiveMinutes = 5 * 60 * 1000;
     listing.biddingEndTime = new Date(now.getTime() + fiveMinutes);
     await listing.save();
 

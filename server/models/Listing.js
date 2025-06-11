@@ -82,6 +82,10 @@ const ListingSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  remarks:{
+    type: String,
+    default: 'Pending',
+  },
 });
 
 export default mongoose.model('Listing', ListingSchema);

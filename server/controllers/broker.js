@@ -91,6 +91,36 @@ const getBrokerListings = async (req, res) => {
   }
 };
 
+const updateBrokerRemarks = async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const brokerId = req.user._id;
+    const { remarks } = req.body;
+
+    // Find the listing
+    const listing = await Listing.findById(listingId);
+
+    if (!listing) {
+      return res.status(404).json({ error: 'Listing not found' });
+    }
+
+    // Authorization: Only assigned broker can update
+    if (!listing.brokerId || listing.brokerId.toString() !== brokerId.toString()) {
+      return res.status(403).json({ error: 'Unauthorized: This listing is not assigned to you' });
+    }
+
+    // Update remarks
+    listing.remarks = remarks;
+    await listing.save();
+
+    res.status(200).json({ message: 'Remarks updated successfully', remarks });
+  } catch (error) {
+    console.error('Error in updateBrokerRemarks:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
 const getBrokerListingDetails = async (req, res) => {
   try {
     const listingId = req.params.id;
@@ -114,20 +144,31 @@ const getBrokerListingDetails = async (req, res) => {
 
     const highestBid = bids.length > 0 ? bids[0] : null;
 
-    // Determine bidding status
-    const now = new Date();
-    const biddingStart = listing.biddingDate
-      ? new Date(`${listing.biddingDate.toISOString().split('T')[0]}T${listing.biddingStartTime}`)
-      : null;
-    const biddingEnd = listing.biddingDate
-      ? new Date(`${listing.biddingDate.toISOString().split('T')[0]}T${listing.biddingEndTime}`)
-      : null;
+    // Compute biddingStart and biddingEnd from date string and start time string
+    const computeDateTime = (dateStr, timeStr) => {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      const date = new Date(dateStr); // this uses local time zone
+      date.setHours(hours, minutes, 0, 0);
+      return date;
+    };
 
+    let biddingStart = null;
+    let biddingEnd = null;
     let biddingStatus = 'not started';
-    if (biddingStart && biddingEnd) {
-      if (now < biddingStart) biddingStatus = 'not started';
-      else if (now >= biddingStart && now <= biddingEnd) biddingStatus = 'ongoing';
-      else if (now > biddingEnd) biddingStatus = 'completed';
+
+    if (listing.biddingDate && listing.biddingStartTime) {
+      biddingStart = computeDateTime(listing.biddingDate, listing.biddingStartTime);
+      biddingEnd = new Date(biddingStart.getTime() + 5 * 60 * 1000); // +5 minutes
+
+      const now = new Date();
+
+      if (now < biddingStart) {
+        biddingStatus = 'not started';
+      } else if (now >= biddingStart && now <= biddingEnd) {
+        biddingStatus = 'ongoing';
+      } else {
+        biddingStatus = 'completed';
+      }
     }
 
     res.status(200).json({
@@ -152,10 +193,12 @@ const getBrokerListingDetails = async (req, res) => {
 
 
 
+
 export {
     getBrokerProfile,
     updateBrokerProfile,
     getAllBrokerProfile,
     getBrokerListings,
     getBrokerListingDetails,
+    updateBrokerRemarks,
 }
