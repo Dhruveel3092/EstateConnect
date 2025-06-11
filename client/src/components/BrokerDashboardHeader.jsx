@@ -58,7 +58,7 @@ const BrokerDashboardHeader = () => {
         </Link>
         <div className="hidden md:flex space-x-6">
           <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
-          <Link to="/my-listings" className="hover:text-yellow-300">My Listings</Link>
+          <Link to="/broker-listing" className="hover:text-yellow-300">Listings</Link>
           <Link to="/client-requests" className="hover:text-yellow-300">Client Requests</Link>
           <Link to="/my-auctions" className="hover:text-yellow-300">My Auctions</Link>
           <Link to="/payments" className="hover:text-yellow-300">Payments</Link>

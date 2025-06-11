@@ -27,6 +27,8 @@ const APIRoutes = {
   getBids: `${host}/general/get-bids`,
 
   getAllBrokers: `${host}/broker/get-all-brokers`,
+  getBrokerListings: `${host}/broker/get-broker-listings`,
+  getBrokerListingDetails: `${host}/broker/get-broker-listing-details`,
 
 };
 
