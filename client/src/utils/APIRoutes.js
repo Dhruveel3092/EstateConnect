@@ -28,6 +28,9 @@ const APIRoutes = {
   getBids: `${host}/general/get-bids`,
   removeBid: `${host}/general/remove-bid`,
 
+  rateProperty: `${host}/rating/rate-property`,
+  getRating: `${host}/rating/get-rating`,
+
   getAllBrokers: `${host}/broker/get-all-brokers`,
   getBrokerListings: `${host}/broker/get-broker-listings`,
   getBrokerListingDetails: `${host}/broker/get-broker-listing-details`,

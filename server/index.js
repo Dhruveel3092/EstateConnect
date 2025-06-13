@@ -10,6 +10,7 @@ import verifyToken from "./middleware/authMiddleware.js";
 import brokerRoutes from "./routes/broker.js";
 import clientRoutes from "./routes/client.js";
 import generalRoutes from "./routes/general.js";
+import brokerRatingRoutes from "./routes/brokerRating.js";
 const app = express();
 
 const server = http.createServer(app);
@@ -60,6 +61,7 @@ app.use('/auth', authRoutes);
 app.use('/general',verifyToken,generalRoutes);
 app.use('/broker',verifyToken,brokerRoutes);
 app.use('/client',verifyToken,clientRoutes);
+app.use('/rating',verifyToken,brokerRatingRoutes);
 
 mongoose
   .connect( process.env.MONGO_URL, {

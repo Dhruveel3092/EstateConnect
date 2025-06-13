@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+import BrokerRating from './BrokerRating.js';
+
 dotenv.config();
 
 const options = { discriminatorKey: 'role', timestamps: true };
@@ -93,16 +95,42 @@ const BrokerSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  rating: {
-    type: Number,
-    default: 0,
-  },
   commissionPercentage: {
     type: Number,
     default: 5,
   },
 });
 
+BrokerSchema.virtual('averageRating').get(async function () {
+  const result = await BrokerRating.aggregate([
+    { $match: { broker: this._id } },
+    {
+      $group: {
+        _id: '$broker',
+        average: { $avg: '$rating' },
+      },
+    },
+  ]);
+
+  return result[0]?.average || 0;
+});
+
+BrokerSchema.methods.calculateAverageRating = async function () {
+  const result = await BrokerRating.aggregate([
+    { $match: { broker: this._id } },
+    {
+      $group: {
+        _id: '$broker',
+        average: { $avg: '$rating' },
+      },
+    },
+  ]);
+
+  const avg = result[0]?.average || 0;
+  this.rating = avg;
+  await this.save();
+  return avg;
+};
 
 const Broker = User.discriminator('Broker', BrokerSchema);
 

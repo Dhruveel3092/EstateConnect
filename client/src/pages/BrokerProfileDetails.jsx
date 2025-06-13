@@ -24,7 +24,7 @@ const BrokerProfileDetails = () => {
           username,
           profilePicture,
           location: brokerLocation,
-          rating,
+          averageRating,
           commissionPercentage,
           companyName,
           contactNumber,
@@ -35,7 +35,7 @@ const BrokerProfileDetails = () => {
           username,
           profilePicture,
           brokerLocation,
-          rating,
+          averageRating,
           commissionPercentage,
           companyName,
           contactNumber,
@@ -52,7 +52,7 @@ const BrokerProfileDetails = () => {
     username,
     profilePicture,
     brokerLocation,
-    rating,
+    averageRating,
     commissionPercentage,
     companyName,
     contactNumber,
@@ -96,8 +96,8 @@ const BrokerProfileDetails = () => {
 
             {/* Rating */}
             <div className="flex items-center my-2">
-              <span className="text-yellow-400 text-xl">{'★'.repeat(rating)}</span>
-              <span className="text-gray-500 ml-2">{rating} ★</span>
+              <span className="text-yellow-400 text-xl">{'★'.repeat(averageRating)}</span>
+              <span className="text-gray-500 ml-2">{averageRating} ★</span>
             </div>
 
             {/* Commission */}

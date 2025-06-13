@@ -97,11 +97,20 @@ const getAllBrokerProfile = async (req, res) => {
       licenseNumber: { $ne: null },
       location: { $exists: true, $ne: null, $ne: '' },
       contactNumber: { $exists: true, $ne: null, $ne: '' },
-      rating: { $ne: null },
       commissionPercentage: { $ne: null },
     }).select('-password -refreshToken -passwordResetToken -__v');
 
-    res.status(200).json({ brokers });
+    const brokersWithAvgRating = await Promise.all(
+      brokers.map(async (broker) => {
+        const avgRating = await broker.averageRating; 
+        return {
+          ...broker.toObject(),
+          averageRating: avgRating,
+        };
+      })
+    );
+
+    res.status(200).json({ brokers: brokersWithAvgRating });
   } catch (error) {
     console.error('Error fetching brokers:', error);
     res.status(500).json({ message: 'Server error' });
