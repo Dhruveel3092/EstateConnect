@@ -3,6 +3,36 @@ import Listing from '../models/Listing.js';
 import Bid from '../models/Bid.js';
 
 
+const verifyListing = async (req, res) => {
+  try {
+   
+    const listingId = req.params.id;
+    
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found' });
+    }
+
+    // Only the broker assigned to this listing can verify it
+   // console.log(listing);
+    if (listing.brokerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'You are not authorized to verify this listing' });
+    }
+
+    if (listing.isVerified) {
+      return res.status(400).json({ message: 'Listing is already verified' });
+    }
+
+    listing.isVerified = true;
+    await listing.save();
+
+    res.status(200).json({ message: 'Listing verified successfully', listing });
+  } catch (error) {
+    console.error('Error verifying listing:', error);
+    res.status(500).json({ message: 'Server error while verifying listing' });
+  }
+};
+
 const getBrokerProfile = async (req, res) => {
    // console.log(req.user);
   try {
@@ -120,55 +150,86 @@ const updateBrokerRemarks = async (req, res) => {
   }
 };
 
-
 const getBrokerListingDetails = async (req, res) => {
   try {
     const listingId = req.params.id;
 
-    // Fetch the listing with seller details
-    const listing = await Listing.findById(listingId).populate('userRef', 'username email contactNumber');
+    const listing = await Listing.findById(listingId)
+      .populate('userRef', 'username email contactNumber');
 
     if (!listing) {
       return res.status(404).json({ error: 'Listing not found' });
     }
 
-    // Authorization: Only the assigned broker can access
     if (!listing.brokerId || listing.brokerId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: 'Unauthorized: This listing is not assigned to you' });
     }
 
-    // Get highest bid and bidder
-    const bids = await Bid.find({ listing: listingId })
+    const allBids = await Bid.find({ listing: listingId })
       .sort({ amount: -1 })
       .populate('bidder', 'username email contactNumber');
 
-    const highestBid = bids.length > 0 ? bids[0] : null;
+    // De-duplicate: Keep only highest bid per bidder
+    const bidderMap = new Map();
+    for (const bid of allBids) {
+      const bidderId = bid.bidder?._id?.toString();
+      if (bidderId && !bidderMap.has(bidderId)) {
+        bidderMap.set(bidderId, bid);
+      }
+    }
 
-    // Compute biddingStart and biddingEnd from date string and start time string
-    const computeDateTime = (dateStr, timeStr) => {
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      const date = new Date(dateStr); // this uses local time zone
-      date.setHours(hours, minutes, 0, 0);
-      return date;
-    };
+    const uniqueBids = Array.from(bidderMap.values());
+    const uniqueBidders = uniqueBids.map(bid => ({
+      _id: bid.bidder._id,
+      username: bid.bidder.username,
+      email: bid.bidder.email,
+      contactNumber: bid.bidder.contactNumber,
+      amount: bid.amount,
+    }));
+
+    const highestBid = uniqueBids.length > 0 ? uniqueBids[0] : null;
+
+    // -------------------------
+    // Parse bidding start & end
+    // -------------------------
 
     let biddingStart = null;
     let biddingEnd = null;
+
+    // Format 1: Separate date and "HH:mm" time string
+    if (
+      listing.biddingDate instanceof Date &&
+      typeof listing.biddingStartTime === 'string' &&
+      listing.biddingStartTime.includes(':')
+    ) {
+      const [h, m] = listing.biddingStartTime.split(':').map(Number);
+      biddingStart = new Date(listing.biddingDate);
+      biddingStart.setHours(h, m, 0, 0);
+    }
+    
+    else if (typeof listing.biddingStartTime === 'string') {
+      const d = new Date(listing.biddingStartTime);
+      if (!isNaN(d)) biddingStart = d;
+    }
+
+    // Handle biddingEndTime
+    if (typeof listing.biddingEndTime === 'string') {
+      const d = new Date(listing.biddingEndTime);
+      if (!isNaN(d)) biddingEnd = d;
+    }
+
+   
+    if (biddingStart && !biddingEnd) {
+      biddingEnd = new Date(biddingStart.getTime() + 5 * 60 * 1000);
+    }
+
+
+    const now = new Date();
     let biddingStatus = 'not started';
-
-    if (listing.biddingDate && listing.biddingStartTime) {
-      biddingStart = computeDateTime(listing.biddingDate, listing.biddingStartTime);
-      biddingEnd = new Date(biddingStart.getTime() + 5 * 60 * 1000); // +5 minutes
-
-      const now = new Date();
-
-      if (now < biddingStart) {
-        biddingStatus = 'not started';
-      } else if (now >= biddingStart && now <= biddingEnd) {
-        biddingStatus = 'ongoing';
-      } else {
-        biddingStatus = 'completed';
-      }
+    if (biddingStart && biddingEnd) {
+      if (now < biddingStart) biddingStatus = 'not started';
+      else if (now >= biddingStart && now <= biddingEnd) biddingStatus = 'ongoing';
+      else biddingStatus = 'completed';
     }
 
     res.status(200).json({
@@ -177,7 +238,9 @@ const getBrokerListingDetails = async (req, res) => {
       biddingStatus,
       highestBidder: highestBid?.bidder || null,
       highestBidAmount: highestBid?.amount || 0,
+      allBidders: uniqueBidders,
     });
+
   } catch (error) {
     console.error('Error in getBrokerListingDetails:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -194,8 +257,12 @@ const getBrokerListingDetails = async (req, res) => {
 
 
 
+
+
+
 export {
     getBrokerProfile,
+    verifyListing,
     updateBrokerProfile,
     getAllBrokerProfile,
     getBrokerListings,

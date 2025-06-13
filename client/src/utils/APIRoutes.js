@@ -26,11 +26,13 @@ const APIRoutes = {
   getSingleListing: `${host}/general/get-single-listing`,
   createBid: `${host}/general/create-bid`,
   getBids: `${host}/general/get-bids`,
+  removeBid: `${host}/general/remove-bid`,
 
   getAllBrokers: `${host}/broker/get-all-brokers`,
   getBrokerListings: `${host}/broker/get-broker-listings`,
   getBrokerListingDetails: `${host}/broker/get-broker-listing-details`,
   updateBrokerRemarks: `${host}/broker/update-remarks`,
+  verifyListing: `${host}/broker/verify-listing`,
 
 };
 

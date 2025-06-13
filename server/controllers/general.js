@@ -129,20 +129,44 @@ const createListing = async (req, res, next) => {
 };
 
 
+const removeUserBids = async (req, res) => {
+  const { propertyId:listingId, userId } = req.params;
+  //console.log('Removing bids for listingId:', listingId, 'and userId:', userId);
+
+  try {
+    await Bid.deleteMany({ listing: listingId, bidder: userId });
+
+
+    const remainingBids = await Bid.find({ listing: listingId });
+
+
+    let newHighestBid = 0;
+    if (remainingBids.length > 0) {
+      newHighestBid = Math.max(...remainingBids.map(b => b.amount));
+    }
+
+
+    await Listing.findByIdAndUpdate(listingId, { currentHighestBid: newHighestBid });
+
+    res.status(200).json({ message: 'All bids from user removed successfully.' });
+  } catch (error) {
+    console.error('Error removing bids:', error);
+    res.status(500).json({ message: 'Failed to remove bids.' });
+  }
+};
+
 const getAllListings = async (req, res) => {
   try {
     const now = new Date();
 
-    
-    const listings = await Listing.find().sort({ createdAt: -1 });
+  
+    const listings = await Listing.find({ isVerified: true }).sort({ createdAt: -1 });
 
-    
+  
     const filteredListings = listings.filter(listing => {
-      if (!listing.biddingEndTime) return true; 
+      if (!listing.biddingEndTime) return true;
 
       const endTime = new Date(listing.biddingEndTime);
-
-      
       if (isNaN(endTime)) return false;
 
       return endTime > now;
@@ -154,6 +178,7 @@ const getAllListings = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
 
 
 const getSingleListing = async (req, res) => {
@@ -258,5 +283,6 @@ export {
   getAllListings,
   getSingleListing,
   getBids,
-  createBid
+  createBid,
+  removeUserBids,
 };

@@ -86,6 +86,10 @@ const ListingSchema = new mongoose.Schema({
     type: String,
     default: 'Pending',
   },
+  isVerified:{
+    type: Boolean,
+    default: false,
+  }
 });
 
 export default mongoose.model('Listing', ListingSchema);
