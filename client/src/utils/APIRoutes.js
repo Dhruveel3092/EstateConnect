@@ -31,6 +31,7 @@ const APIRoutes = {
   getBrokerListings: `${host}/broker/get-broker-listings`,
   getBrokerListingDetails: `${host}/broker/get-broker-listing-details`,
   updateBrokerRemarks: `${host}/broker/update-remarks`,
+  verifyListing: `${host}/broker/verify-listing`,
 
 };
 

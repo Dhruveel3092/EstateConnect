@@ -133,16 +133,14 @@ const getAllListings = async (req, res) => {
   try {
     const now = new Date();
 
-    
-    const listings = await Listing.find().sort({ createdAt: -1 });
+  
+    const listings = await Listing.find({ isVerified: true }).sort({ createdAt: -1 });
 
-    
+  
     const filteredListings = listings.filter(listing => {
-      if (!listing.biddingEndTime) return true; 
+      if (!listing.biddingEndTime) return true;
 
       const endTime = new Date(listing.biddingEndTime);
-
-      
       if (isNaN(endTime)) return false;
 
       return endTime > now;
@@ -154,6 +152,7 @@ const getAllListings = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
 
 
 const getSingleListing = async (req, res) => {
