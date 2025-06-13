@@ -169,41 +169,60 @@ const getBrokerListingDetails = async (req, res) => {
       .sort({ amount: -1 })
       .populate('bidder', 'username email contactNumber');
 
+    // De-duplicate: Keep only highest bid per bidder
     const bidderMap = new Map();
     for (const bid of allBids) {
       const bidderId = bid.bidder?._id?.toString();
       if (bidderId && !bidderMap.has(bidderId)) {
-        bidderMap.set(bidderId, bid); // Keep only highest bid per bidder
+        bidderMap.set(bidderId, bid);
       }
     }
 
     const uniqueBids = Array.from(bidderMap.values());
-
-    // Include highest bid amount for each bidder
     const uniqueBidders = uniqueBids.map(bid => ({
       _id: bid.bidder._id,
       username: bid.bidder.username,
       email: bid.bidder.email,
       contactNumber: bid.bidder.contactNumber,
-      amount: bid.amount, // Include amount
+      amount: bid.amount,
     }));
 
     const highestBid = uniqueBids.length > 0 ? uniqueBids[0] : null;
 
-    const computeDateTime = (dateStr, timeStr) => {
-      if (!dateStr || !timeStr) return null;
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      const date = new Date(dateStr);
-      date.setHours(hours, minutes, 0, 0);
-      return date;
-    };
+    // -------------------------
+    // Parse bidding start & end
+    // -------------------------
 
-    let biddingStart = computeDateTime(listing.biddingDate, listing.biddingStartTime);
-    let biddingEnd = computeDateTime(listing.biddingDate, listing.biddingEndTime);
+    let biddingStart = null;
+    let biddingEnd = null;
 
+    // Format 1: Separate date and "HH:mm" time string
+    if (
+      listing.biddingDate instanceof Date &&
+      typeof listing.biddingStartTime === 'string' &&
+      listing.biddingStartTime.includes(':')
+    ) {
+      const [h, m] = listing.biddingStartTime.split(':').map(Number);
+      biddingStart = new Date(listing.biddingDate);
+      biddingStart.setHours(h, m, 0, 0);
+    }
+    
+    else if (typeof listing.biddingStartTime === 'string') {
+      const d = new Date(listing.biddingStartTime);
+      if (!isNaN(d)) biddingStart = d;
+    }
+
+    // Handle biddingEndTime
+    if (typeof listing.biddingEndTime === 'string') {
+      const d = new Date(listing.biddingEndTime);
+      if (!isNaN(d)) biddingEnd = d;
+    }
+
+   
     if (biddingStart && !biddingEnd) {
       biddingEnd = new Date(biddingStart.getTime() + 5 * 60 * 1000);
     }
+
 
     const now = new Date();
     let biddingStatus = 'not started';
@@ -219,7 +238,7 @@ const getBrokerListingDetails = async (req, res) => {
       biddingStatus,
       highestBidder: highestBid?.bidder || null,
       highestBidAmount: highestBid?.amount || 0,
-      allBidders: uniqueBidders
+      allBidders: uniqueBidders,
     });
 
   } catch (error) {

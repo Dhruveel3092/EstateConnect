@@ -243,10 +243,36 @@ export default function BrokerListingDetails() {
                           <td className="px-4 py-2 border">{bidder.username}</td>
                           <td className="px-4 py-2 border">{bidder.email}</td>
                           <td className="px-4 py-2 border">{bidder.contactNumber || 'N/A'}</td>
-                          <td className="px-4 py-2 border">₹{bidder.amount?.toLocaleString() || '0'}</td>
+                          <td className="px-4 py-2 border flex items-center justify-between gap-2">
+                            ₹{bidder.amount?.toLocaleString() || '0'}
+                            <button
+                              onClick={async () => {
+                                if (
+                                  window.confirm(`Are you sure you want to remove all bids by ${bidder.username}?`)
+                                ) {
+                                  try {
+                                    //console.log(id);
+                                    await axios.delete(
+                                      `${APIRoutes.removeBid}/${id}/${bidder._id}`,
+                                      { withCredentials: true }
+                                    );
+                                    toast.success(`All bids by ${bidder.username} removed.`);
+                                    // Full page reload
+                                    window.location.reload();
+                                  } catch (error) {
+                                    toast.error(`Failed to remove bids by ${bidder.username}.`);
+                                  }
+                                }
+                              }}
+                              className="ml-2 text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                            >
+                              Change Buyer
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
+
                   </table>
                 </div>
               </div>
