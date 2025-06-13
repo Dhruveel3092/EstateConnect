@@ -70,7 +70,7 @@ const BrokerageFirm = () => {
               <p className="text-gray-500 mb-2">{broker.location}</p>
 
               <span className="bg-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-full mb-4">
-                {broker.rating} ★
+                {broker.averageRating} ★
               </span>
 
               <div className="flex justify-between items-center w-full">

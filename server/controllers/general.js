@@ -1,6 +1,7 @@
 import { User } from '../models/User.js';
 import Listing from '../models/Listing.js';
 import Bid from '../models/Bid.js';
+import BrokerRating from '../models/BrokerRating.js';
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 
@@ -147,7 +148,7 @@ const removeUserBids = async (req, res) => {
 
 
     await Listing.findByIdAndUpdate(listingId, { currentHighestBid: newHighestBid });
-
+    await BrokerRating.deleteOne({ property: listingId, user: userId });
     res.status(200).json({ message: 'All bids from user removed successfully.' });
   } catch (error) {
     console.error('Error removing bids:', error);
