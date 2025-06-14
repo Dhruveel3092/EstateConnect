@@ -26,7 +26,7 @@ const verifyToken = async (req, res, next) => {
           res.cookie("accessToken", newAccessToken, {
             expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
             httpOnly: true,
-            sameSite: "none",
+            sameSite: "lax",
             secure: true,
           });
           req.user = user;

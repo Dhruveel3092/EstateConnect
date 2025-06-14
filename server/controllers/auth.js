@@ -45,7 +45,7 @@ const generateAccessAndRefreshTokens = async(_id) =>{
       {
         expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: 'lax',
         secure: true,
       }
     )
@@ -53,7 +53,7 @@ const generateAccessAndRefreshTokens = async(_id) =>{
         {
           expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
           httpOnly: true,
-          sameSite: 'none',
+          sameSite: 'lax',
           secure: true,
         }
       );
@@ -83,7 +83,7 @@ const generateAccessAndRefreshTokens = async(_id) =>{
       {
         expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: 'lax',
         secure: true,
       }
     )
@@ -91,7 +91,7 @@ const generateAccessAndRefreshTokens = async(_id) =>{
         {
           expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
           httpOnly: true,
-          sameSite: 'none',
+          sameSite: 'lax',
           secure: true,
         }
       );
@@ -117,14 +117,14 @@ const login = async (req, res, next) => {
     res.cookie("accessToken", accessToken, {
       expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: 'lax',
       secure: true,
     });
 
     res.cookie("refreshToken", refreshToken, {
       expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: 'lax',
       secure: true,
     });
 
@@ -160,7 +160,7 @@ const login = async (req, res, next) => {
           {
             expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
             httpOnly: true,
-            sameSite: 'none',
+            sameSite: 'lax',
             secure: true,
           }
         )
@@ -168,7 +168,7 @@ const login = async (req, res, next) => {
             {
               expires: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
               httpOnly: true,
-              sameSite: 'none',
+              sameSite: 'lax',
               secure: true,
             }
           );

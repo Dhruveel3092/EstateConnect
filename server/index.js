@@ -44,7 +44,7 @@ const corsOptions ={
   origin: allowedOrigin, 
   credentials:true,            
   optionSuccessStatus:200,
-  sameSite:'none',
+  sameSite:'lax',
   secure:true,
   methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
 }
