@@ -5,7 +5,7 @@ const Navbar = () => {
     <header className="bg-white shadow-md p-4 px-8 flex justify-between items-center sticky top-0 z-50">
       
       <Link to="/" className="text-3xl font-extrabold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
-        RealEstatePro
+        EstateConnectPro
       </Link>
       <nav className="flex items-center gap-6">
         <Link

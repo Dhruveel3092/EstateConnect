@@ -122,7 +122,7 @@ const Login = () => {
             <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
               <div className="flex items-center justify-center mb-6">
                 <img src={Logo} alt="Logo" className="h-12 mr-2" />
-                <h1 className="text-3xl font-bold text-blue-600">REAL-ESTATE</h1>
+                <h1 className="text-3xl font-bold text-blue-600">EstateConnect</h1>
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">

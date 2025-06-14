@@ -54,7 +54,7 @@ const BrokerDashboardHeader = () => {
       {/* Left: Logo and Navigation */}
       <div className="flex items-center space-x-6">
         <Link to="/" className="text-2xl font-bold text-yellow-400">
-          BrokerRealEstate
+          BrokerEstateConnect
         </Link>
         <div className="hidden md:flex space-x-6">
           <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>

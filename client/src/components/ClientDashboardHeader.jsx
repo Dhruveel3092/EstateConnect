@@ -53,7 +53,7 @@ const ClientDashboardHeader = () => {
       {/* Left: Logo and Navigation */}
       <div className="flex items-center space-x-6">
         <Link to="/" className="text-2xl font-bold text-yellow-400">
-          RealEstate
+          EstateConnect
         </Link>
 
         {/* Conditional Quick Links based on User Role */}
