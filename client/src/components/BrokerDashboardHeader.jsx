@@ -1,41 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaBell, FaUserCircle } from 'react-icons/fa';
+import { FaBell } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import APIRoutes from '../utils/APIRoutes';
 import { showToast } from '../utils/toast';
 
 const BrokerDashboardHeader = () => {
-  const { user, setIsAuthenticated,setUser } = useAuth();
+  const { user, setIsAuthenticated, setUser } = useAuth();
   const navigate = useNavigate();
 
-  const [search, setSearch] = useState('');
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [assignedListings, setAssignedListings] = useState([]);
+  const [fetchError, setFetchError] = useState(false);
 
-  // Sample notifications include a client request notification.
-  const notifications = [
-    { id: 1, message: "New client request received for property 101." },
-    { id: 2, message: "Upcoming auction for a commercial property." },
-  ];
+  useEffect(() => {
+          const fetchAssignedListings = async () => {
+        try {
+          if (!user?._id) return;
+          const res = await axios.get(`${APIRoutes.getBrokerListings}`, {
+            withCredentials: true,
+          });
+          console.log('Assigned Listings:', res.data);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (search.trim() !== '') {
-      navigate(`/search?query=${search}`);
-    }
-  };
+          const data = Array.isArray(res.data) ? res.data : [];
+          setAssignedListings(data);
+          setFetchError(false);
+        } catch (error) {
+          console.error('Error fetching assigned listings:', error);
+          setAssignedListings([]);
+          setFetchError(true);
+        }
+      };
 
-  const toggleProfileDropdown = () => {
-    setIsProfileOpen(!isProfileOpen);
-    setIsNotificationsOpen(false);
-  };
 
-  const toggleNotificationsDropdown = () => {
-    setIsNotificationsOpen(!isNotificationsOpen);
-    setIsProfileOpen(false);
-  };
+    fetchAssignedListings();
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -45,89 +45,80 @@ const BrokerDashboardHeader = () => {
       setUser(null);
       navigate('/login');
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
+  const toggleNotifications = () => {
+    setIsNotificationsOpen(!isNotificationsOpen);
+  };
+
   return (
-    <div className="bg-purple-700 text-white flex justify-between items-center p-4 shadow-lg sticky top-0 z-50">
-      {/* Left: Logo and Navigation */}
-      <div className="flex items-center space-x-6">
-        <Link to="/" className="text-2xl font-bold text-yellow-400">
+    <header className="bg-purple-700 text-white px-6 py-4 shadow-md sticky top-0 z-50">
+      <div className="flex items-center">
+        {/* Left: Logo */}
+        <Link to="/" className="text-2xl font-bold text-yellow-300 tracking-wide">
           BrokerEstateConnect
         </Link>
-        <div className="hidden md:flex space-x-6">
-          <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
-          <Link to="/broker-listing" className="hover:text-yellow-300">Listings</Link>
-          <Link to="/client-requests" className="hover:text-yellow-300">Client Requests</Link>
-          <Link to="/my-auctions" className="hover:text-yellow-300">My Auctions</Link>
-          <Link to="/payments" className="hover:text-yellow-300">Payments</Link>
-        </div>
-      </div>
 
-      {/* Center: Search Bar */}
-      <form onSubmit={handleSearch} className="relative hidden md:block">
-        <div className="flex items-center bg-white rounded-full px-4 py-2 shadow-md">
-          <FaSearch className="text-gray-500 mr-2" />
-          <input
-            type="text"
-            placeholder="Search listings..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent focus:outline-none text-black w-64 placeholder-gray-400"
-          />
-        </div>
-      </form>
-
-      {/* Right: Notifications and Profile */}
-      <div className="flex items-center space-x-6 relative">
-        {/* Notifications Bell */}
-        <div className="relative">
-          <button onClick={toggleNotificationsDropdown} className="relative hover:text-yellow-300">
-            <FaBell size={24} />
-            {notifications.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
-                {notifications.length}
-              </span>
-            )}
+        {/* Right: Nav links and Notification */}
+        <div className="flex items-center gap-8 ml-auto text-sm font-medium">
+          <Link to="/dashboard" className="hover:text-yellow-300 transition">
+            Dashboard
+          </Link>
+          <Link to="/broker-listing" className="hover:text-yellow-300 transition">
+            Listings
+          </Link>
+          <Link to={`/profile/${user?.username}`} className="hover:text-yellow-300 transition">
+            My Profile
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="hover:text-yellow-300 transition focus:outline-none"
+          >
+            Logout
           </button>
-          {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-72 bg-white text-black rounded-lg shadow-lg z-20">
-              <div className="p-4">
-                <h3 className="font-bold mb-2">Notifications</h3>
-                {notifications.length === 0 ? (
-                  <div className="text-gray-500">No notifications</div>
-                ) : (
-                  notifications.map((notification) => (
-                    <div key={notification.id} className="mb-2 border-b pb-2">
-                      {notification.message}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </div>
 
-        {/* Profile Dropdown */}
-        <div className="relative">
-          <button onClick={toggleProfileDropdown} className="flex items-center space-x-2 hover:text-yellow-300">
-            <FaUserCircle size={30} />
-            <span className="hidden md:inline">{user?.name?.split(" ")[0]}</span>
-          </button>
-          {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-lg z-20">
-              <div className="p-4 space-y-2">
-                <Link to={`/profile/${user?.username}`} className="block hover:text-blue-600">My Profile</Link>
-                <div onClick={handleLogout} className="block cursor-pointer text-red-600 hover:text-red-800">
-                  Logout
+          {/* Notifications Dropdown */}
+          <div className="relative">
+            <button
+              onClick={toggleNotifications}
+              className="relative hover:text-yellow-300 transition"
+            >
+              <FaBell size={22} />
+              {assignedListings.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
+                  {assignedListings.length}
+                </span>
+              )}
+            </button>
+
+                        {isNotificationsOpen && (
+              <div className="absolute right-0 mt-2 w-96 max-h-80 overflow-y-auto bg-white text-black rounded-lg shadow-lg z-30">
+                <div className="p-4">
+                  <h3 className="font-semibold text-gray-800 mb-2">Assigned Listings</h3>
+
+                  {fetchError ? (
+                    <p className="text-sm text-red-600">Failed to load notifications.</p>
+                  ) : assignedListings.length === 0 ? (
+                    <p className="text-sm text-gray-600">No notifications.</p>
+                  ) : (
+                    assignedListings.map((listing) => (
+                      <div key={listing._id} className="text-sm text-gray-800 border-b py-2">
+                        <div>
+                          You have been assigned a property titled <span className="font-medium">{listing.name}</span> located in <span className="italic">{listing.location}</span>. Starting bid: ₹{listing.startPrice.toLocaleString()}.
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
-            </div>
-          )}
+            )}
+
+          </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 

@@ -1,4 +1,5 @@
-const host = "https://estate-connect-henna.vercel.app";
+// const host = "https://estate-connect-henna.vercel.app";
+const host = "http://localhost:8080";
 
 const APIRoutes = {
   host,
@@ -18,6 +19,7 @@ const APIRoutes = {
   getClientProfile: `${host}/client/getprofile`,
   updateClientProfile: `${host}/client/updateprofile`,
   getMyDeals: `${host}/client/get-my-deals`,
+  recentProperties: `${host}/client/recent-properties`,
 
   getSignature: `${host}/general/getsignature`,
   uploadProfileImage: `${host}/general/upload-profile-image`,
@@ -36,6 +38,7 @@ const APIRoutes = {
   getBrokerListingDetails: `${host}/broker/get-broker-listing-details`,
   updateBrokerRemarks: `${host}/broker/update-remarks`,
   verifyListing: `${host}/broker/verify-listing`,
+
 
 };
 
