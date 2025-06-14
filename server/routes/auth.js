@@ -10,8 +10,8 @@ router.post('/google-login', googleLogin);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/logout", (req, res) => {
-  res.clearCookie("accessToken", { sameSite: 'lax', secure: true });
-  res.clearCookie("refreshToken", { sameSite: 'lax', secure: true });
+  res.clearCookie("accessToken", { sameSite: 'none', secure: true });
+  res.clearCookie("refreshToken", { sameSite: 'none', secure: true });
   res.json({ message: "Logged out successfully." });
 });
 
