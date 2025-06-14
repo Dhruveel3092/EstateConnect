@@ -3,6 +3,27 @@ import Bid from '../models/Bid.js';
 import Listing from '../models/Listing.js';
 
 
+const getRecentListings = async (req, res) => {
+  try {
+  // console.log('Fetching recent listings...');
+    const hours = parseInt(req.query.withinHours) || 24;
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+    const recentListings = await Listing.find({
+      createdAt: { $gte: since },
+      isVerified: true,
+    })
+      .sort({ createdAt: -1 }) // newest first
+      .select('name location type startPrice createdAt city _id'); // select only required fields
+    //console.log(recentListings);
+    res.status(200).json({ properties: recentListings });
+  } catch (error) {
+    console.error('Error fetching recent listings:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
 
 const getClientProfile = async (req, res) => {
    // console.log(req.user);
@@ -148,5 +169,6 @@ const getMyDeals = async (req, res) => {
 export {
     getClientProfile,
     updateClientProfile,
-    getMyDeals
+    getMyDeals,
+    getRecentListings
 }
