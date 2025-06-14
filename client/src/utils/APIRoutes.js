@@ -1,5 +1,4 @@
-const host = "https://estate-connect-henna.vercel.app";
-
+const host = "https://estateconnect-xkrz.onrender.com";
 const APIRoutes = {
   host,
   login: `${host}/auth/login`,

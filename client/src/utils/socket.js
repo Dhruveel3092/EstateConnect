@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const socket = io("https://estate-connect-henna.vercel.app", {
+const socket = io("https://estateconnect-xkrz.onrender.com", {
   withCredentials: true,
 });
 
