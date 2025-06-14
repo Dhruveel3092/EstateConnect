@@ -1,4 +1,6 @@
+
 const host = "https://estateconnect-xkrz.onrender.com";
+
 const APIRoutes = {
   host,
   login: `${host}/auth/login`,
@@ -17,6 +19,7 @@ const APIRoutes = {
   getClientProfile: `${host}/client/getprofile`,
   updateClientProfile: `${host}/client/updateprofile`,
   getMyDeals: `${host}/client/get-my-deals`,
+  recentProperties: `${host}/client/recent-properties`,
 
   getSignature: `${host}/general/getsignature`,
   uploadProfileImage: `${host}/general/upload-profile-image`,
@@ -35,6 +38,7 @@ const APIRoutes = {
   getBrokerListingDetails: `${host}/broker/get-broker-listing-details`,
   updateBrokerRemarks: `${host}/broker/update-remarks`,
   verifyListing: `${host}/broker/verify-listing`,
+
 
 };
 

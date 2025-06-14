@@ -1,30 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaBell, FaUserCircle } from 'react-icons/fa';
+import { FaBell, FaUserCircle } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import APIRoutes from '../utils/APIRoutes';
 import { showToast } from '../utils/toast';
 
 const ClientDashboardHeader = () => {
-  const { user, setIsAuthenticated ,setUser} = useAuth();
+  const { user, setIsAuthenticated, setUser } = useAuth();
   const navigate = useNavigate();
 
-  const [search, setSearch] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
-  const notifications = [
-    { id: 1, message: "You have been outbid on 3BHK Villa!" },
-    { id: 2, message: "New auction: Office Space in Bandra" },
-  ];
+  // Fetch new properties added in last 24 hours
+  useEffect(() => {
+    const fetchRecentProperties = async () => {
+      try {
+        const { data } = await axios.get(APIRoutes.recentProperties, { withCredentials: true });
+        if (data?.properties?.length > 0) {
+          const recentNotifications = data.properties.map((property) => ({
+            id: property._id,
+            message: `New property listed in ${property.location} for ${property.type} with starting price Rs.${property.startPrice}.`,
+          }));
+          setNotifications(recentNotifications);
+        }
+      } catch (error) {
+        console.error('Error fetching recent properties:', error);
+      }
+    };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (search.trim() !== '') {
-      navigate(`/search?query=${search}`);
-    }
-  };
+    fetchRecentProperties();
+  }, []);
 
   const toggleProfileDropdown = () => {
     setIsProfileOpen(!isProfileOpen);
@@ -56,13 +64,13 @@ const ClientDashboardHeader = () => {
           EstateConnect
         </Link>
 
-        {/* Conditional Quick Links based on User Role */}
+        {/* Quick Links */}
         {user?.role === 'Client' ? (
           <div className="hidden md:flex space-x-6">
             <Link to="/dashboard" className="hover:text-yellow-300">Dashboard</Link>
             <Link to="/buy" className="hover:text-yellow-300">Buy</Link>
             <Link to="/sell" className="hover:text-yellow-300">Sell</Link>
-            <Link to="/my-deals" className="hover:text-yellow-300">My deals</Link>
+            <Link to="/my-deals" className="hover:text-yellow-300">My Deals</Link>
             <Link to="/brokerage-firm" className="hover:text-yellow-300">Brokerage Firm</Link>
           </div>
         ) : user?.role === 'Broker' ? (
@@ -80,23 +88,9 @@ const ClientDashboardHeader = () => {
         )}
       </div>
 
-      {/* Center: Search Bar */}
-      <form onSubmit={handleSearch} className="relative hidden md:block">
-        <div className="flex items-center bg-white rounded-full px-4 py-2 shadow-md">
-          <FaSearch className="text-gray-500 mr-2" />
-          <input
-            type="text"
-            placeholder="Search by city, property type..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent focus:outline-none text-black w-64 placeholder-gray-400"
-          />
-        </div>
-      </form>
-
       {/* Right: Notifications and Profile */}
       <div className="flex items-center space-x-6 relative">
-        {/* Notifications Bell */}
+        {/* Notifications */}
         <div className="relative">
           <button onClick={toggleNotificationsDropdown} className="relative hover:text-yellow-300">
             <FaBell size={24} />
@@ -106,16 +100,17 @@ const ClientDashboardHeader = () => {
               </span>
             )}
           </button>
-
           {isNotificationsOpen && (
-            <div className="absolute right-0 mt-2 w-72 bg-white text-black rounded-lg shadow-lg z-20">
-              <div className="p-4">
-                <h3 className="font-bold mb-2">Notifications</h3>
+            <div className="absolute right-0 mt-2 w-80 bg-white text-black rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto">
+              <div className="p-4 sticky top-0 bg-white z-10 border-b">
+                <h3 className="font-bold">Notifications</h3>
+              </div>
+              <div className="p-4 pt-2 space-y-2">
                 {notifications.length === 0 ? (
                   <div className="text-gray-500">No notifications</div>
                 ) : (
-                  notifications.map(notification => (
-                    <div key={notification.id} className="mb-2 border-b pb-2">
+                  notifications.map((notification) => (
+                    <div key={notification.id} className="text-sm border-b pb-2">
                       {notification.message}
                     </div>
                   ))
@@ -125,21 +120,17 @@ const ClientDashboardHeader = () => {
           )}
         </div>
 
-        {/* Profile Dropdown */}
+        {/* Profile */}
         <div className="relative">
           <button onClick={toggleProfileDropdown} className="flex items-center space-x-2 hover:text-yellow-300">
             <FaUserCircle size={30} />
             <span className="hidden md:inline">{user?.name?.split(" ")[0]}</span>
           </button>
-
           {isProfileOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-lg z-20">
               <div className="p-4 space-y-2">
                 <Link to={`/profile/${user?.username}`} className="block hover:text-blue-600">My Profile</Link>
-                <div 
-                  onClick={handleLogout} 
-                  className="block cursor-pointer text-red-600 hover:text-red-800"
-                >
+                <div onClick={handleLogout} className="block cursor-pointer text-red-600 hover:text-red-800">
                   Logout
                 </div>
               </div>
